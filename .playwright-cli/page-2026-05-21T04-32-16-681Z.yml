@@ -1,0 +1,19 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - img "蒲英向阳" [ref=e7]
+    - heading "幼析 · 育见" [level=1] [ref=e8]
+    - paragraph [ref=e9]: 蒲黄榆第二幼儿园 自主教研支持系统
+  - generic [ref=e10]:
+    - heading "登录" [level=2] [ref=e11]
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - img [ref=e14]
+        - button "刘沂柠" [ref=e74] [cursor=pointer]:
+          - text: 刘沂柠
+          - img [ref=e18]
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - textbox "请输入您的密码" [ref=e24]
+    - button "进入系统" [ref=e25] [cursor=pointer]:
+      - img [ref=e26]
+      - text: 进入系统

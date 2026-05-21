@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* 红黄绿渐变主题 — 蒲英向阳 */
+@theme {
+  --color-primary: #d4544a;
+  --color-primary-light: #e88a5a;
+  --color-primary-dark: #a03830;
+  --color-secondary: #e8c85a;
+  --color-secondary-light: #a8c85a;
+  --color-accent: #6ab85a;
+  --color-warm-bg: #fdf5ef;
+  --color-warm-card: #fffaf5;
+  --color-text-main: #4a3028;
+  --color-text-secondary: #8a7068;
+  --color-text-light: #b5a098;
+  --color-border: #e8d0c4;
+  --font-family-sans: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}

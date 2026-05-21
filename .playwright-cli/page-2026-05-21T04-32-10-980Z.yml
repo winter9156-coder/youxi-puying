@@ -1,0 +1,63 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - img "蒲英向阳" [ref=e7]
+    - heading "幼析 · 育见" [level=1] [ref=e8]
+    - paragraph [ref=e9]: 蒲黄榆第二幼儿园 自主教研支持系统
+  - generic [ref=e10]:
+    - heading "登录" [level=2] [ref=e11]
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - img [ref=e14]
+        - button "请选择您的姓名" [active] [ref=e17] [cursor=pointer]:
+          - text: 请选择您的姓名
+          - img [ref=e18]
+        - generic [ref=e29]:
+          - button "李念东" [ref=e30] [cursor=pointer]
+          - button "吴瑸" [ref=e31] [cursor=pointer]
+          - button "刘玉红" [ref=e32] [cursor=pointer]
+          - button "刘珊珊" [ref=e33] [cursor=pointer]
+          - button "刘梦" [ref=e34] [cursor=pointer]
+          - button "王洋洋" [ref=e35] [cursor=pointer]
+          - button "刘沂柠" [ref=e36] [cursor=pointer]
+          - button "杨柳" [ref=e37] [cursor=pointer]
+          - button "郭宇涵" [ref=e38] [cursor=pointer]
+          - button "张雨晴" [ref=e39] [cursor=pointer]
+          - button "李昕怡" [ref=e40] [cursor=pointer]
+          - button "蔡涵" [ref=e41] [cursor=pointer]
+          - button "周岩" [ref=e42] [cursor=pointer]
+          - button "芦丽" [ref=e43] [cursor=pointer]
+          - button "王文雪" [ref=e44] [cursor=pointer]
+          - button "徐可新" [ref=e45] [cursor=pointer]
+          - button "张建梅" [ref=e46] [cursor=pointer]
+          - button "孙乐" [ref=e47] [cursor=pointer]
+          - button "张冉" [ref=e48] [cursor=pointer]
+          - button "纪思曼" [ref=e49] [cursor=pointer]
+          - button "都建昀" [ref=e50] [cursor=pointer]
+          - button "尹亭蕊" [ref=e51] [cursor=pointer]
+          - button "张斯婕" [ref=e52] [cursor=pointer]
+          - button "苏琦蕊" [ref=e53] [cursor=pointer]
+          - button "邢佳杰" [ref=e54] [cursor=pointer]
+          - button "王旻姣" [ref=e55] [cursor=pointer]
+          - button "刘茜" [ref=e56] [cursor=pointer]
+          - button "谷雨" [ref=e57] [cursor=pointer]
+          - button "王玉" [ref=e58] [cursor=pointer]
+          - button "徐佳" [ref=e59] [cursor=pointer]
+          - button "李亚洁" [ref=e60] [cursor=pointer]
+          - button "姜媛" [ref=e61] [cursor=pointer]
+          - button "鲁晨曦" [ref=e62] [cursor=pointer]
+          - button "李梦" [ref=e63] [cursor=pointer]
+          - button "马正颖" [ref=e64] [cursor=pointer]
+          - button "富佳妍" [ref=e65] [cursor=pointer]
+          - button "程紫玉" [ref=e66] [cursor=pointer]
+          - button "田鑫颖" [ref=e67] [cursor=pointer]
+          - button "李一帆" [ref=e68] [cursor=pointer]
+          - button "伊金宝" [ref=e69] [cursor=pointer]
+          - button "张淼" [ref=e70] [cursor=pointer]
+          - button "李晓娇" [ref=e71] [cursor=pointer]
+          - button "李雪彤" [ref=e72] [cursor=pointer]
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - textbox "请输入您的密码" [ref=e24]
+    - button "进入系统" [ref=e25] [cursor=pointer]:
+      - img [ref=e26]
+      - text: 进入系统

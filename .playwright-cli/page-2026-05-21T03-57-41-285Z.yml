@@ -1,0 +1,41 @@
+- generic [ref=e75]:
+  - complementary [ref=e76]:
+    - generic [ref=e78]:
+      - img "蒲英向阳" [ref=e80]
+      - generic [ref=e81]:
+        - generic [ref=e82]: 幼析 · 育见
+        - generic [ref=e83]:
+          - generic [ref=e84]: 蒲黄榆第二幼儿园
+          - generic [ref=e85]: 自主教研支持系统
+    - navigation [ref=e86]:
+      - link "工作台" [ref=e87] [cursor=pointer]:
+        - /url: "#/"
+        - img [ref=e88]
+        - generic [ref=e93]: 工作台
+      - link "幼析" [ref=e94] [cursor=pointer]:
+        - /url: "#/幼析"
+        - img [ref=e95]
+        - generic [ref=e98]: 幼析
+      - link "育见" [ref=e99] [cursor=pointer]:
+        - /url: "#/育见"
+        - img [ref=e100]
+        - generic [ref=e102]: 育见
+      - link "协同共育" [ref=e103] [cursor=pointer]:
+        - /url: "#/协同共育"
+        - img [ref=e104]
+        - generic [ref=e106]: 协同共育
+      - link "幼儿档案" [ref=e107] [cursor=pointer]:
+        - /url: "#/幼儿档案"
+        - img [ref=e108]
+        - generic [ref=e112]: 幼儿档案
+      - link "班级统计" [ref=e113] [cursor=pointer]:
+        - /url: "#/班级统计"
+        - img [ref=e114]
+        - generic [ref=e116]: 班级统计
+    - generic [ref=e117]:
+      - generic [ref=e118]: 刘沂柠
+      - button "退出登录" [ref=e119]:
+        - img [ref=e120]
+        - text: 退出登录
+  - main [ref=e123]:
+    - generic [ref=e235]: 加载中...

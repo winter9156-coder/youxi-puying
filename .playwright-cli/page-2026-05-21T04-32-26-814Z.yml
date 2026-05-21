@@ -1,0 +1,93 @@
+- generic [ref=e75]:
+  - complementary [ref=e76]:
+    - generic [ref=e78]:
+      - img "蒲英向阳" [ref=e80]
+      - generic [ref=e81]:
+        - generic [ref=e82]: 幼析 · 育见
+        - generic [ref=e83]:
+          - generic [ref=e84]: 蒲黄榆第二幼儿园
+          - generic [ref=e85]: 自主教研支持系统
+    - navigation [ref=e86]:
+      - link "工作台" [ref=e87] [cursor=pointer]:
+        - /url: "#/"
+        - img [ref=e88]
+        - generic [ref=e93]: 工作台
+      - link "幼析" [ref=e94] [cursor=pointer]:
+        - /url: "#/幼析"
+        - img [ref=e95]
+        - generic [ref=e98]: 幼析
+      - link "育见" [ref=e99] [cursor=pointer]:
+        - /url: "#/育见"
+        - img [ref=e100]
+        - generic [ref=e102]: 育见
+      - link "协同共育" [ref=e103] [cursor=pointer]:
+        - /url: "#/协同共育"
+        - img [ref=e104]
+        - generic [ref=e106]: 协同共育
+      - link "幼儿档案" [ref=e107] [cursor=pointer]:
+        - /url: "#/幼儿档案"
+        - img [ref=e108]
+        - generic [ref=e112]: 幼儿档案
+      - link "班级统计" [ref=e113] [cursor=pointer]:
+        - /url: "#/班级统计"
+        - img [ref=e114]
+        - generic [ref=e116]: 班级统计
+    - generic [ref=e117]:
+      - generic [ref=e118]: 刘沂柠
+      - button "退出登录" [ref=e119]:
+        - img [ref=e120]
+        - text: 退出登录
+  - main [ref=e123]:
+    - generic [ref=e125]:
+      - generic [ref=e126]:
+        - heading "下午好 👋" [level=1] [ref=e128]
+        - generic [ref=e129]: 2026年5月21日
+      - generic [ref=e130]:
+        - generic [ref=e132]:
+          - generic [ref=e133]:
+            - generic [ref=e134]: "1"
+            - generic [ref=e135]: 观察记录
+          - img [ref=e137]
+        - generic [ref=e141]:
+          - generic [ref=e142]:
+            - generic [ref=e143]: "0"
+            - generic [ref=e144]: 已生成方案
+          - img [ref=e146]
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - generic [ref=e151]: "0"
+            - generic [ref=e152]: 幼儿档案
+          - img [ref=e154]
+      - generic [ref=e156]:
+        - heading "快捷入口" [level=2] [ref=e157]
+        - generic [ref=e158]:
+          - button "新建观察记录 记录幼儿游戏行为，生成分析报告" [ref=e159]:
+            - img [ref=e161]
+            - generic [ref=e164]:
+              - generic [ref=e165]: 新建观察记录
+              - generic [ref=e166]: 记录幼儿游戏行为，生成分析报告
+          - button "幼儿档案 查看幼儿发展档案" [ref=e167]:
+            - img [ref=e169]
+            - generic [ref=e173]:
+              - generic [ref=e174]: 幼儿档案
+              - generic [ref=e175]: 查看幼儿发展档案
+          - button "生成思维共享方案 设计游戏回顾讨论活动" [ref=e176]:
+            - img [ref=e178]
+            - generic [ref=e181]:
+              - generic [ref=e182]: 生成思维共享方案
+              - generic [ref=e183]: 设计游戏回顾讨论活动
+          - button "家园沟通模拟 模拟与家长沟通的场景" [ref=e184]:
+            - img [ref=e186]
+            - generic [ref=e188]:
+              - generic [ref=e189]: 家园沟通模拟
+              - generic [ref=e190]: 模拟与家长沟通的场景
+          - button "PBL 方案设计 设计项目式学习课程" [ref=e191]:
+            - img [ref=e193]
+            - generic [ref=e195]:
+              - generic [ref=e196]: PBL 方案设计
+              - generic [ref=e197]: 设计项目式学习课程
+          - button "班级统计 全班发展水平概览" [ref=e198]:
+            - img [ref=e200]
+            - generic [ref=e202]:
+              - generic [ref=e203]: 班级统计
+              - generic [ref=e204]: 全班发展水平概览

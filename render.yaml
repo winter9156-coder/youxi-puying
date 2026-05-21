@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: youxi-puying
+    runtime: node
+    plan: free
+    buildCommand: npm install && npx vite build
+    startCommand: node server.cjs
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: youxi-puying-db
+          property: connectionString
+      - key: DEEPSEEK_API_KEY
+        value: sk-cb768f0c69b141209f6a57671aab95bc
+      - key: JWT_SECRET
+        generateValue: true
+
+databases:
+  - name: youxi-puying-db
+    plan: free
+    ipAllowList: []
