@@ -7,6 +7,14 @@ import { CLASS_LIST } from '../../constants';
 
 export default function ChildList() {
   const navigate = useNavigate();
+
+  // 读取当前教师的班级（必须在 useState 之前）
+  let teacherClass = '';
+  try {
+    const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
+    if (u.role === 'teacher') teacherClass = u.data?.班级 || '';
+  } catch {}
+
   const [children, setChildren] = useState<Child[]>([]);
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('');
@@ -17,13 +25,6 @@ export default function ChildList() {
   const [batchText, setBatchText] = useState('');
   const [batchClass, setBatchClass] = useState(teacherClass || '');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-
-  // 读取当前教师的班级
-  let teacherClass = '';
-  try {
-    const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
-    if (u.role === 'teacher') teacherClass = u.data?.班级 || '';
-  } catch {}
 
   const activeClassFilter = classFilter || teacherClass;
 
