@@ -195,6 +195,5 @@ async function deleteMedia(id) {
   const r = await p.query(`DELETE FROM media WHERE id = $1`, [id]);
   return r.rowCount > 0;
 }
-}
 
 module.exports = { initSchema, get, getAll, insert, update, remove, query, getStats, getAllData, exportData, saveMedia, getMedia, deleteMedia };
