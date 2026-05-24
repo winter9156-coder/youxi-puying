@@ -165,3 +165,12 @@ http.createServer((q,r)=>{
   r.writeHead(200,{'Content-Type':{'html':'text/html','js':'text/javascript','css':'text/css'}[ext]||'application/octet-stream','Content-Disposition':'inline'});
   r.end(fs.readFileSync(fp));
 }).listen(5173,'0.0.0.0');
+
+// 启动前初始化数据存储（PG创建表结构）
+if (process.env.DATABASE_URL) {
+  store.init().then(() => {
+    console.log('🚀 服务器就绪');
+  }).catch(e => {
+    console.error('❌ 数据存储初始化失败:', e.message);
+  });
+}

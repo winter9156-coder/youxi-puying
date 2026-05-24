@@ -651,7 +651,7 @@
     "id": "e06b9281-f559-4810-b719-999aa38de447",
     "name": "王洋洋",
     "username": "王洋洋",
-    "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuUdYI4DMP8nHSDfh0yQdNIGrLKA5RtWG",
+    "password": "$2b$10$u5xJznpMRGShIYGQhW5UD.i2lwfp/OHu0GWY9NGg0OhaZdodRAE52",
     "role": "admin",
     "class": "行政",
     "data": {
@@ -659,7 +659,8 @@
       "角色": "行政管理员",
       "编号": 43,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "密码": "admin123"
     }
   }
 }

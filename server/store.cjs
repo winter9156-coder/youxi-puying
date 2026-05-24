@@ -10,4 +10,13 @@ if (usePG) {
   store = require('./data-store.cjs');
 }
 
+// 添加 init 方法：PG 初始化表结构，文件存储直接成功
+store.init = async function() {
+  if (store.initSchema) {
+    await store.initSchema();
+    console.log('✅ 数据库表结构已就绪');
+  }
+  return true;
+};
+
 module.exports = store;
