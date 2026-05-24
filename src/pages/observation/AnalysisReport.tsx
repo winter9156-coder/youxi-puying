@@ -217,9 +217,10 @@ export default function AnalysisReportPage() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-[var(--color-text-main)]">观察分析报告</h1>
-          <div className="flex items-center gap-4 mt-1 text-sm text-[var(--color-text-secondary)]">
+          <div className="flex items-center gap-4 mt-1 text-sm text-[var(--color-text-secondary)] flex-wrap">
             <span>分析对象：<span className="bg-gray-100 text-[var(--color-text-main)] px-2 py-0.5 rounded">{child?.name || '未选择幼儿'}</span></span>
             <span>观察时间：{formatDate(observation.date)}</span>
+            {observation.teacherName && <span>👩‍🏫 观察教师：{observation.teacherName}</span>}
             {observation.context && <span>📍 {observation.context}</span>}
           </div>
         </div>

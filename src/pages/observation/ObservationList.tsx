@@ -179,6 +179,11 @@ export default function ObservationList() {
                                 <span className="text-sm font-medium text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded-full">
                                   {obs.childNames}
                                 </span>
+                                {obs.teacherName && (
+                                  <span className="text-xs text-[var(--color-text-light)] bg-gray-100 px-2 py-0.5 rounded">
+                                    👩‍🏫 {obs.teacherName}
+                                  </span>
+                                )}
                                 <span className="flex items-center gap-1 text-xs text-[var(--color-text-light)]">
                                   <Calendar className="w-3 h-3" /> {formatDate(obs.date)}
                                 </span>
@@ -233,6 +238,11 @@ export default function ObservationList() {
                     <span className="text-sm font-medium text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2.5 py-0.5 rounded-full">
                       {obs.childNames}
                     </span>
+                    {obs.teacherName && (
+                      <span className="text-xs text-[var(--color-text-light)] bg-gray-100 px-2 py-0.5 rounded">
+                        👩‍🏫 {obs.teacherName}
+                      </span>
+                    )}
                     <span className="flex items-center gap-1 text-xs text-[var(--color-text-light)]">
                       <Calendar className="w-3 h-3" /> {formatDate(obs.date)}
                     </span>

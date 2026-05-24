@@ -247,6 +247,13 @@ export default function NewObservation() {
     setStep('analyzing');
     setStreamContent('');
 
+    // 获取当前登录教师姓名
+    let teacherName = '';
+    try {
+      const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
+      teacherName = u.name || '';
+    } catch {}
+
     try {
       // 构建用户输入
       let userInput = `幼儿化名：${children.filter(c => selectedChildIds.includes(c.id)).map(c => c.name).join('、')}\n`;
@@ -281,6 +288,7 @@ export default function NewObservation() {
         childExpression: '',
         teacherDialogue: '',
         mediaUrls: mediaIds,
+        teacherName,
         createdAt: new Date().toISOString(),
       };
       await saveObservation(obs);

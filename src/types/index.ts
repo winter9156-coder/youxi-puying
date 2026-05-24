@@ -21,6 +21,7 @@ export interface Observation {
   childExpression: string;  // 幼儿表达表征（幼儿对自己行为的表达）
   teacherDialogue: string;  // 师幼共读对话记录
   mediaUrls: string[];
+  teacherName?: string;     // 观察教师姓名
   createdAt: string;
 }
 
