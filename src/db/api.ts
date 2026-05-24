@@ -115,11 +115,29 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
 }
 
 // ========== 媒体文件 ==========
+export async function uploadMedia(id: string, base64Data: string, mimeType: string): Promise<void> {
+  await fetch(`${BASE}/upload`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, data: base64Data, mimeType }),
+  });
+}
+export async function fetchMedia(id: string): Promise<Blob | undefined> {
+  const res = await fetch(`${BASE}/media/${id}`);
+  if (!res.ok) return undefined;
+  return res.blob();
+}
 export async function saveMedia(id: string, blob: Blob): Promise<void> {
-  // 媒体文件上传到 COS，需要额外的上传接口
-  const formData = new FormData();
-  formData.append('file', blob, id);
-  await fetch(`${BASE}/media/upload/${id}`, { method: 'POST', body: formData });
+  const base64 = await new Promise<string>(resolve => {
+    const r = new FileReader();
+    r.onload = () => resolve((r.result as string).split(',')[1]);
+    r.readAsDataURL(blob);
+  });
+  await fetch(`${BASE}/upload`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, data: base64, mimeType: blob.type }),
+  });
 }
 export async function getMedia(id: string): Promise<Blob | undefined> {
   const res = await fetch(`${BASE}/media/${id}`);

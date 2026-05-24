@@ -149,8 +149,49 @@ http.createServer((q,r)=>{
     return;
   }
 
+  // Media: 上传媒体文件（base64）
+  if(u==='/api/upload'&&m==='POST'){
+    readBody(q).then(async data=>{
+      try{
+        const{id,data:base64Data,mimeType}=data;
+        if(!id||!base64Data){sendJSON(r,400,{error:'缺少id或data'});return;}
+        // 验证 base64
+        if(base64Data.length>50*1024*1024){sendJSON(r,400,{error:'文件过大（超过50MB）'});return;}
+        await store.saveMedia(id,base64Data,mimeType||'');
+        sendJSON(r,200,{success:true});
+      }catch(e){sendJSON(r,500,{error:e.message});}
+    }).catch(()=>sendJSON(r,400,{error:'无效的请求数据'}));
+    return;
+  }
+  // Media: 获取/删除媒体文件
+  const mediaMatch=u.match(/^\/api\/media\/([a-zA-Z0-9-]+)$/);
+  if(mediaMatch&&m==='GET'){
+    const mediaId=mediaMatch[1];
+    (async()=>{
+      try{
+        const media=await store.getMedia(mediaId);
+        if(!media){r.writeHead(404);r.end('Not found');return;}
+        const buf=Buffer.from(media.data,'base64');
+        if(media.mimeType){
+          r.writeHead(200,{'Content-Type':media.mimeType,'Content-Disposition':'inline','Cache-Control':'public,max-age=86400'});
+        }else{
+          r.writeHead(200,{'Content-Type':'application/octet-stream'});
+        }
+        r.end(buf);
+      }catch(e){r.writeHead(500);r.end(e.message);}
+    })().catch(e=>{r.writeHead(500);r.end(e.message);});
+    return;
+  }
+  if(mediaMatch&&m==='DELETE'){
+    (async()=>{
+      try{await store.deleteMedia(mediaMatch[1]);sendJSON(r,200,{success:true});}
+      catch(e){sendJSON(r,500,{error:e.message});}
+    })().catch(e=>sendJSON(r,500,{error:e.message}));
+    return;
+  }
+
   // REST API
-  if(u.startsWith('/api/')&&!u.startsWith('/api/download')&&!u.startsWith('/api/login')&&!u.startsWith('/api/me')&&!u.startsWith('/api/admin')){apiRouter(q,r,u,m);return;}
+  if(u.startsWith('/api/')&&!u.startsWith('/api/download')&&!u.startsWith('/api/login')&&!u.startsWith('/api/me')&&!u.startsWith('/api/admin')&&!u.startsWith('/api/upload')&&!u.startsWith('/api/media')){apiRouter(q,r,u,m);return;}
   // Word: 观察记录下载
   if(u==='/api/download-docx'&&m==='POST'){let b=[];q.on('data',c=>b.push(c));q.on('end',async()=>{try{const d=JSON.parse(Buffer.concat(b));const tp=t=>t.split('\n').filter(l=>l.trim()).map(l=>new Paragraph({spacing:{after:120},children:[new TextRun(clean(l))]}));const ch=[new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:300},children:[new TextRun({text:'蒲二幼自主游戏追记（室内）',bold:true,size:36})]}),new Paragraph({spacing:{after:200},children:[new TextRun(clean('班级：'+d.context)),new TextRun('    记录人：')]}),new Paragraph({spacing:{after:60},children:[new TextRun({text:'分析对象',bold:true})]}),new Paragraph({spacing:{after:120},children:[new TextRun(clean(d.childName))]}),new Paragraph({spacing:{after:60},children:[new TextRun({text:'观察时间',bold:true})]}),new Paragraph({spacing:{after:200},children:[new TextRun(clean(d.date))]}),new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'观察实录',bold:true,size:24})]}),...tp(clean(d.description))];if(d.photos&&d.photos.length)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'现场素材',bold:true,size:24})]}),...d.photos.map(p=>new Paragraph({spacing:{before:60,after:60},alignment:AlignmentType.CENTER,children:[new ImageRun({data:Buffer.from(p.split(',')[1],'base64'),transformation:{width:480,height:360}})]})));if(d.childExpression)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'幼儿表达表征记录',bold:true,size:24})]}),...tp(clean(d.childExpression)));if(d.teacherDialogue)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'师幼共读对话',bold:true,size:24})]}),...tp(clean(d.teacherDialogue)));if(d.summary)ch.push(new Paragraph({spacing:{before:60,after:60},children:[new TextRun({text:'行为摘要',bold:true,size:22})]}),...tp(clean(d.summary)));if(d.analysis)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'观察分析',bold:true,size:24})]}),...tp(clean(d.analysis)));if(d.strategy)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'教育支持策略',bold:true,size:24})]}),...tp(clean(d.strategy)));ch.push(new Paragraph({spacing:{before:300},alignment:AlignmentType.CENTER,border:{top:{style:BorderStyle.SINGLE,size:6,color:'CCCCCC',space:1}},children:[]}),new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'以上分析基于本次单一观察片段，请结合幼儿日常表现与家庭背景综合判断',italics:true,color:'888888',size:18})]}));const doc=new Document({styles:{default:{document:{run:{font:'宋体',size:22}}}},sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1440,right:1440,bottom:1440,left:1440}}},children:ch}]});const buf=await Packer.toBuffer(doc);r.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment;filename=report.docx','Content-Length':buf.length});r.end(buf);}catch(e){r.writeHead(500);r.end('err');}});return;}
   // Word: 发展档案下载

@@ -157,4 +157,40 @@ function getStats() {
   return stats;
 }
 
-module.exports = { get, getAll, insert, update, remove, query, getAllData, exportData, importData, getStats, TABLES };
+// ========== 媒体文件存储（JSON文件中存储media索引，实际文件存本地）==========
+const MEDIA_DIR = path.join(DATA_DIR, 'media');
+
+function ensureMediaDir() {
+  if (!fs.existsSync(MEDIA_DIR)) fs.mkdirSync(MEDIA_DIR, { recursive: true });
+}
+
+function saveMedia(id, data, mimeType) {
+  ensureMediaDir();
+  const metaPath = path.join(MEDIA_DIR, id + '.json');
+  const filePath = path.join(MEDIA_DIR, id + '.bin');
+  fs.writeFileSync(filePath, Buffer.from(data, 'base64'));
+  fs.writeFileSync(metaPath, JSON.stringify({ id, mimeType, createdAt: new Date().toISOString() }));
+  return true;
+}
+
+function getMedia(id) {
+  ensureMediaDir();
+  const filePath = path.join(MEDIA_DIR, id + '.bin');
+  if (!fs.existsSync(filePath)) return null;
+  const metaPath = path.join(MEDIA_DIR, id + '.json');
+  let mimeType = '';
+  try { const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8')); mimeType = meta.mimeType || ''; } catch {}
+  return { data: fs.readFileSync(filePath).toString('base64'), mimeType };
+}
+
+function deleteMedia(id) {
+  ensureMediaDir();
+  const filePath = path.join(MEDIA_DIR, id + '.bin');
+  const metaPath = path.join(MEDIA_DIR, id + '.json');
+  let ok = false;
+  if (fs.existsSync(filePath)) { fs.unlinkSync(filePath); ok = true; }
+  if (fs.existsSync(metaPath)) fs.unlinkSync(metaPath);
+  return ok;
+}
+
+module.exports = { get, getAll, insert, update, remove, query, getAllData, exportData, importData, getStats, TABLES, saveMedia, getMedia, deleteMedia };

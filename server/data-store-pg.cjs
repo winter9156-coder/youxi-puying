@@ -34,7 +34,16 @@ async function initSchema() {
       )
     `);
   }
-  console.log('✅ PostgreSQL schema initialized');
+  // 媒体文件表（base64存储）
+  await p.query(`
+    CREATE TABLE IF NOT EXISTS media (
+      id TEXT PRIMARY KEY,
+      data TEXT NOT NULL,
+      mime_type TEXT NOT NULL DEFAULT '',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  console.log('✅ PostgreSQL schema initialized (with media table)');
 }
 
 // 获取单条记录
@@ -160,4 +169,32 @@ async function exportData() {
   return JSON.stringify(data, null, 2);
 }
 
-module.exports = { initSchema, get, getAll, insert, update, remove, query, getStats, getAllData, exportData };
+// ========== 媒体文件存储 ==========
+
+// 保存媒体文件（base64）
+async function saveMedia(id, data, mimeType) {
+  const p = getPool();
+  await p.query(
+    `INSERT INTO media (id, data, mime_type) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET data = $2, mime_type = $3`,
+    [id, data, mimeType || '']
+  );
+  return true;
+}
+
+// 获取媒体文件
+async function getMedia(id) {
+  const p = getPool();
+  const r = await p.query(`SELECT data, mime_type FROM media WHERE id = $1`, [id]);
+  if (r.rows.length === 0) return null;
+  return { data: r.rows[0].data, mimeType: r.rows[0].mime_type };
+}
+
+// 删除媒体文件
+async function deleteMedia(id) {
+  const p = getPool();
+  const r = await p.query(`DELETE FROM media WHERE id = $1`, [id]);
+  return r.rowCount > 0;
+}
+}
+
+module.exports = { initSchema, get, getAll, insert, update, remove, query, getStats, getAllData, exportData, saveMedia, getMedia, deleteMedia };

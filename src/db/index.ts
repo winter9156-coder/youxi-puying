@@ -207,19 +207,34 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
   await db.put('settings', { key: 'app', value: settings });
 }
 
-// ========== 媒体文件存储（始终使用 IndexedDB，不依赖服务端 API）==========
+// ========== 媒体文件存储 ==========
 
 export async function saveMedia(id: string, blob: Blob): Promise<void> {
+  // 优先使用服务端 API（跨设备共享）
+  if (await ensureMode()) {
+    const base64 = await new Promise<string>(resolve => {
+      const r = new FileReader();
+      r.onload = () => resolve((r.result as string).split(',')[1]);
+      r.readAsDataURL(blob);
+    });
+    await api.uploadMedia(id, base64, blob.type);
+    return;
+  }
   const db = await getDB();
   await db.put('mediaStore', blob, id);
 }
 
 export async function getMedia(id: string): Promise<Blob | undefined> {
+  // 优先使用服务端 API（跨设备共享）
+  if (await ensureMode()) {
+    return api.fetchMedia(id);
+  }
   const db = await getDB();
   return db.get('mediaStore', id);
 }
 
 export async function deleteMedia(id: string): Promise<void> {
+  if (await ensureMode()) { await api.deleteMedia(id); return; }
   const db = await getDB();
   await db.delete('mediaStore', id);
 }
