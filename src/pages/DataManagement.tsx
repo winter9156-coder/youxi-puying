@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Download, RefreshCw, Cloud, Users, FileText, Eye, Lightbulb, MessageSquare, ChevronDown, ChevronRight, BookUser, Camera, Image, X } from 'lucide-react';
+import { Download, RefreshCw, Cloud, Users, FileText, Eye, Lightbulb, MessageSquare, ChevronDown, ChevronRight, BookUser, Camera, Image, X, GraduationCap, Baby } from 'lucide-react';
 
 const API = '';
 
@@ -63,8 +63,8 @@ export default function DataManagement() {
     try {
       const res = await fetch(`${API}/api/admin/backup-to-cos`, { method: 'POST', headers });
       const d = await res.json();
-      setBackupMsg(d.success ? '✅ 备份成功！已保存到 COS' : `❌ 备份失败: ${d.error}`);
-    } catch (e) { setBackupMsg(`❌ 备份失败: ${(e as Error).message}`); }
+      setBackupMsg(d.success ? '备份成功！已保存到 COS' : `备份失败: ${d.error}`);
+    } catch (e) { setBackupMsg(`备份失败: ${(e as Error).message}`); }
     setTimeout(() => setBackupMsg(''), 5000);
   };
 
@@ -78,45 +78,35 @@ export default function DataManagement() {
     });
   }, [data, loadMediaForObs]);
 
-  // 合并用户数据与内容
-  function getUserContent() {
-    if (!data) return [];
-    const obs = data.observations || [];
-    const reports = data.analysis_reports || [];
-    const plans = data.education_plans || [];
-    const comms = data.communication_records || [];
+  // 按班级统计幼儿
+  function getClassChildren() {
+    if (!data) return {};
     const children = data.children || [];
-
-    // 按教师姓名分组
-    const byTeacher: Record<string, any> = {};
-    userData.forEach(u => {
-      byTeacher[u.name] = {
-        ...u,
-        observations: [],
-        reports: [],
-        plans: [],
-        communications: [],
-        childrenCount: 0,
-        totalContent: 0,
-      };
+    const map: Record<string, any[]> = {};
+    children.forEach((c: any) => {
+      const cls = c.class || '未分班';
+      if (!map[cls]) map[cls] = [];
+      map[cls].push(c);
     });
-
-    // 观察记录 → 找不到明确的 teacher_id 字段，用数据中的信息关联
-    // 这里假设观察记录归所有教师所有（共享数据）
-    // 实际中可以通过 teacher_id 或创建者来关联
-    obs.forEach(o => {
-      // 观察记录属于创建它的教师，但当前数据中没有 teacher_id 字段
-      // 所以先计入总览
-    });
-
-    // 将观察记录/报告等关联到教师
-    // 由于当前模型没有 teacher_id 关联，先显示总体统计
-    return { byTeacher, summary: { obs: obs.length, reports: reports.length, plans: plans.length, comms: comms.length, children: children.length } };
+    return map;
   }
 
-  const content = getUserContent();
+  // 按班级统计教师
+  function getClassTeachers() {
+    const map: Record<string, any[]> = {};
+    userData.forEach(u => {
+      if (u.role === 'admin') return;
+      const cls = u.data?.班级 || '未分班';
+      if (!map[cls]) map[cls] = [];
+      map[cls].push(u);
+    });
+    return map;
+  }
 
-  // 加载单条观察记录的所有媒体，返回 object URL 数组（带缓存）
+  const classChildren = getClassChildren();
+  const classTeachers = getClassTeachers();
+  const allClasses = Array.from(new Set([...Object.keys(classChildren), ...Object.keys(classTeachers)])).sort();
+
   const loadMediaForObs = useCallback(async (obs: any): Promise<string[]> => {
     if (!obs?.mediaUrls?.length) return [];
     const urls: string[] = [];
@@ -136,7 +126,6 @@ export default function DataManagement() {
     return urls;
   }, [mediaCache]);
 
-  // 下载单张媒体
   const downloadMedia = useCallback(async (mediaId: string, index: number) => {
     try {
       const res = await fetch(`/api/media/${mediaId}`);
@@ -152,7 +141,6 @@ export default function DataManagement() {
     } catch (e: any) { alert('下载失败: ' + e.message); }
   }, []);
 
-  // 下载整条观察记录的所有媒体
   const downloadObsMedia = useCallback(async (obs: any) => {
     if (!obs?.mediaUrls?.length) return;
     for (let i = 0; i < obs.mediaUrls.length; i++) {
@@ -160,22 +148,25 @@ export default function DataManagement() {
     }
   }, [downloadMedia]);
 
-  // 组件卸载时清理所有 object URL
   useEffect(() => {
     return () => { Object.values(mediaCache).forEach(url => URL.revokeObjectURL(url)); };
   }, []);
+
+  const obsCount = data?.observations?.length || 0;
+  const reportsCount = data?.analysis_reports?.length || 0;
+  const plansCount = data?.education_plans?.length || 0;
+  const commsCount = data?.communication_records?.length || 0;
+  const childrenCount = data?.children?.length || 0;
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[var(--color-text-main)]">📊 数据管理</h1>
+          <h1 className="text-xl font-bold text-[var(--color-text-main)]">数据管理</h1>
           <p className="text-sm text-[var(--color-text-light)] mt-1">
-            {stats?.users || 0} 个用户 ·{' '}
-            {(content as any).summary?.obs || 0} 条观察 ·{' '}
-            {(content as any).summary?.reports || 0} 份报告 ·{' '}
-            {(content as any).summary?.plans || 0} 个方案
+            {userData.length} 个用户 · {allClasses.length} 个班级 · {childrenCount} 名幼儿 ·{' '}
+            {obsCount} 条观察 · {reportsCount} 份报告
           </p>
         </div>
         <div className="flex gap-2">
@@ -204,29 +195,25 @@ export default function DataManagement() {
       <div className="flex gap-2">
         <button onClick={() => setMode('content')}
           className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${mode === 'content' ? 'bg-[var(--color-primary)] text-white' : 'bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-warm-bg)]'}`}>
-          <FileText className="w-4 h-4 inline mr-1.5" />教师内容总览
+          <FileText className="w-4 h-4 inline mr-1.5" />数据总览
         </button>
         <button onClick={() => setMode('tables')}
           className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${mode === 'tables' ? 'bg-[var(--color-primary)] text-white' : 'bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-warm-bg)]'}`}>
           <Users className="w-4 h-4 inline mr-1.5" />用户数据包
         </button>
-        <button onClick={() => setMode('children-obs')}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${mode === 'children-obs' ? 'bg-[var(--color-primary)] text-white' : 'bg-white border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-warm-bg)]'}`}>
-          <BookUser className="w-4 h-4 inline mr-1.5" />按幼儿查看
-        </button>
       </div>
 
-      {/* ===== 教师内容总览 ===== */}
+      {/* ===== 数据总览 ===== */}
       {mode === 'content' && data && (
         <div className="space-y-4">
           {/* 数据概览卡片 */}
           <div className="grid grid-cols-5 gap-3">
             {[
-              { icon: Users, label: '用户', count: stats?.users || 0, color: 'text-blue-600 bg-blue-50' },
-              { icon: Eye, label: '观察记录', count: data.observations?.length || 0, color: 'text-green-600 bg-green-50' },
-              { icon: FileText, label: '分析报告', count: data.analysis_reports?.length || 0, color: 'text-purple-600 bg-purple-50' },
-              { icon: Lightbulb, label: '教育方案', count: data.education_plans?.length || 0, color: 'text-orange-600 bg-orange-50' },
-              { icon: MessageSquare, label: '沟通记录', count: data.communication_records?.length || 0, color: 'text-pink-600 bg-pink-50' },
+              { icon: GraduationCap, label: '班级', count: allClasses.length, color: 'text-indigo-600 bg-indigo-50' },
+              { icon: Baby, label: '幼儿', count: childrenCount, color: 'text-blue-600 bg-blue-50' },
+              { icon: Eye, label: '观察记录', count: obsCount, color: 'text-green-600 bg-green-50' },
+              { icon: FileText, label: '分析报告', count: reportsCount, color: 'text-purple-600 bg-purple-50' },
+              { icon: Lightbulb, label: '教育方案', count: plansCount, color: 'text-orange-600 bg-orange-50' },
             ].map(item => (
               <div key={item.label} className="bg-white rounded-xl p-4 border border-[var(--color-border)]">
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-2 ${item.color}`}>
@@ -237,6 +224,55 @@ export default function DataManagement() {
               </div>
             ))}
           </div>
+
+          {/* 按班级汇总 */}
+          {allClasses.length > 0 && (
+            <div className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-border)]">
+                <h3 className="text-sm font-bold text-[var(--color-text-main)]">
+                  <GraduationCap className="w-4 h-4 inline mr-1.5" />
+                  班级汇总（{allClasses.length}个班级）
+                </h3>
+              </div>
+              <div className="divide-y divide-[var(--color-border)]">
+                {allClasses.map(cls => (
+                  <div key={cls}>
+                    <button onClick={() => setExpandedUser(expandedUser === `cls-${cls}` ? null : `cls-${cls}`)}
+                      className="w-full flex items-center justify-between px-5 py-3 hover:bg-[var(--color-warm-bg)] transition-colors text-left">
+                      <div className="flex items-center gap-3">
+                        {expandedUser === `cls-${cls}` ? <ChevronDown className="w-4 h-4 text-[var(--color-text-light)]" /> : <ChevronRight className="w-4 h-4 text-[var(--color-text-light)]" />}
+                        <span className="text-sm font-medium text-[var(--color-text-main)]">{cls}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{(classChildren[cls] || []).length} 名幼儿</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">{(classTeachers[cls] || []).length} 名教师</span>
+                      </div>
+                    </button>
+                    {expandedUser === `cls-${cls}` && (
+                      <div className="px-5 pb-3 pl-14 space-y-2">
+                        {/* 教师列表 */}
+                        {(classTeachers[cls] || []).length > 0 && (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs text-[var(--color-text-light)]">教师：</span>
+                            {(classTeachers[cls] || []).map((t: any) => (
+                              <span key={t.name} className="text-xs px-2 py-0.5 rounded bg-green-50 text-green-700">{t.name}</span>
+                            ))}
+                          </div>
+                        )}
+                        {/* 幼儿列表 */}
+                        {(classChildren[cls] || []).length > 0 && (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs text-[var(--color-text-light)]">幼儿：</span>
+                            {(classChildren[cls] || []).map((c: any) => (
+                              <span key={c.id} className="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700">{c.name}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 观察记录详情 */}
           {data.observations && data.observations.length > 0 && (
@@ -252,19 +288,19 @@ export default function DataManagement() {
                   <div key={o.id} className="px-5 py-4">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className="text-xs font-medium text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded">
-                        📅 {o.date}
+                        {o.date}
                       </span>
                       {o.context && (
                         <span className="text-xs text-[var(--color-text-light)]">{o.context}</span>
                       )}
                       {o.teacherName && (
                         <span className="text-xs text-[var(--color-text-secondary)] bg-gray-100 px-2 py-0.5 rounded">
-                          👩‍🏫 {o.teacherName}
+                          {o.teacherName}
                         </span>
                       )}
                       {o.mediaUrls?.length > 0 && (
                         <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                          📷 {o.mediaUrls.length} 张
+                          {o.mediaUrls.length} 张
                         </span>
                       )}
                     </div>
@@ -273,7 +309,6 @@ export default function DataManagement() {
                         {o.whiteDescription}
                       </p>
                     )}
-                    {/* 媒体缩略图 */}
                     {o.mediaUrls?.length > 0 && (
                       <div className="flex items-center gap-2 flex-wrap mt-1">
                         {o.mediaUrls.map((mediaId: string, i: number) => (
@@ -294,7 +329,7 @@ export default function DataManagement() {
                           onClick={(e) => { e.stopPropagation(); downloadObsMedia(o); }}
                           className="ml-1 text-xs text-[var(--color-primary)] hover:underline flex items-center gap-0.5 self-end pb-1"
                         >
-                          ⬇ 下载全部
+                          下载全部
                         </button>
                       </div>
                     )}
@@ -336,133 +371,32 @@ export default function DataManagement() {
             </div>
           )}
 
-          {/* 无数据提示 */}
-          {(!data.observations || data.observations.length === 0) && (!data.analysis_reports || data.analysis_reports.length === 0) && (
-            <div className="text-center py-12 text-sm text-[var(--color-text-light)] bg-white rounded-xl border border-[var(--color-border)]">
-              <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p>暂无教师书写内容</p>
-              <p className="text-xs mt-1">教师使用幼析或育见创建内容后，将在这里展示</p>
+          {/* 全部幼儿列表 */}
+          {data.children && data.children.length > 0 && (
+            <div className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--color-border)]">
+                <h3 className="text-sm font-bold text-[var(--color-text-main)]">
+                  <Baby className="w-4 h-4 inline mr-1.5" />
+                  全部幼儿（{data.children.length}名）
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-px bg-[var(--color-border)]">
+                {data.children.map((c: any) => (
+                  <div key={c.id} className="bg-white px-4 py-3">
+                    <div className="text-sm font-medium text-[var(--color-text-main)]">{c.name}</div>
+                    <div className="text-xs text-[var(--color-text-light)] mt-0.5">{c.class || '未分班'}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-        </div>
-      )}
 
-      {/* ===== 按幼儿查看观察记录 ===== */}
-      {mode === 'children-obs' && data && (
-        <div className="space-y-4">
-          {data.children && data.children.length > 0 ? (
-            data.children.map((child: any) => {
-              const childObs = (data.observations || []).filter((o: any) =>
-                o.childIds && o.childIds.includes(child.id)
-              );
-              const childReports = (data.analysis_reports || []).filter((r: any) =>
-                childObs.some((o: any) => o.id === r.observationId)
-              );
-              return (
-                <div key={child.id} className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden">
-                  <button onClick={() => setExpandedUser(expandedUser === child.id ? null : child.id)}
-                    className="w-full flex items-center justify-between px-5 py-3 hover:bg-[var(--color-warm-bg)] transition-colors text-left">
-                    <div className="flex items-center gap-3">
-                      {expandedUser === child.id ? <ChevronDown className="w-4 h-4 text-[var(--color-text-light)]" /> : <ChevronRight className="w-4 h-4 text-[var(--color-text-light)]" />}
-                      <span className="text-sm font-medium text-[var(--color-text-main)]">{child.name}</span>
-                      <span className="text-xs text-[var(--color-text-light)]">{child.class || '未分班'}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{childObs.length} 条记录</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">{childReports.length} 份报告</span>
-                    </div>
-                    {childObs.length > 0 && (
-                      <button onClick={(e) => {
-                        e.stopPropagation();
-                        const json = JSON.stringify(childObs, null, 2);
-                        const blob = new Blob([json], { type: 'application/json' });
-                        const a = document.createElement('a');
-                        a.href = URL.createObjectURL(blob);
-                        a.download = `观察记录_${child.name}.json`;
-                        a.click();
-                      }}
-                        className="text-xs text-[var(--color-primary)] hover:underline flex items-center gap-1 mr-2">
-                        <Download className="w-3 h-3" /> 下载
-                      </button>
-                    )}
-                  </button>
-                  {expandedUser === child.id && (
-                    <div className="px-5 pb-4 space-y-2">
-                      {childObs.length > 0 ? childObs.map((obs: any) => (
-                        <div key={obs.id} className="bg-[var(--color-warm-bg)] rounded-xl p-3 border border-[var(--color-border)]">
-                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                            <span className="text-xs font-medium text-[var(--color-primary)]">📅 {obs.date}</span>
-                            {obs.context && <span className="text-xs text-[var(--color-text-light)]">📍 {obs.context}</span>}
-                            {obs.teacherName && (
-                              <span className="text-xs text-[var(--color-text-secondary)] bg-gray-100 px-2 py-0.5 rounded">
-                                👩‍🏫 {obs.teacherName}
-                              </span>
-                            )}
-                            {obs.mediaUrls?.length > 0 && (
-                              <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                                📷 {obs.mediaUrls.length} 张
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-[var(--color-text-main)] leading-relaxed whitespace-pre-wrap line-clamp-4">
-                            {obs.whiteDescription}
-                          </p>
-                          {/* 媒体缩略图 */}
-                          {obs.mediaUrls?.length > 0 && (
-                            <div className="flex items-center gap-2 flex-wrap mt-2">
-                              {obs.mediaUrls.map((mediaId: string, i: number) => (
-                                <div key={mediaId} className="relative">
-                                  {mediaCache[mediaId] ? (
-                                    <img src={mediaCache[mediaId]} alt={`照片${i+1}`}
-                                      className="w-14 h-14 object-cover rounded border border-[var(--color-border)] cursor-pointer hover:opacity-80"
-                                      onClick={(e) => { e.stopPropagation(); window.open(mediaCache[mediaId], '_blank'); }}
-                                    />
-                                  ) : (
-                                    <div className="w-14 h-14 bg-gray-100 rounded border border-[var(--color-border)] flex items-center justify-center text-xs text-gray-400">
-                                      加载中
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                              <button
-                                onClick={(e) => { e.stopPropagation(); downloadObsMedia(obs); }}
-                                className="ml-1 text-xs text-[var(--color-primary)] hover:underline flex items-center gap-0.5 self-end pb-1"
-                              >
-                                ⬇ 下载全部
-                              </button>
-                            </div>
-                          )}
-                          {obs.whiteDescription && obs.whiteDescription.length > 100 && (
-                            <button onClick={(e) => { e.stopPropagation(); }}
-                              className="text-xs text-[var(--color-primary)] hover:underline mt-1">展开全部</button>
-                          )}
-                          {(() => {
-                            const report = childReports.find((r: any) => r.observationId === obs.id);
-                            return report ? (
-                              <div className="mt-2 pt-2 border-t border-[var(--color-border)]">
-                                <div className="flex items-center gap-1 text-xs text-green-600 mb-1">
-                                  <FileText className="w-3 h-3" /> 分析报告
-                                  <span className={`ml-1 text-[10px] px-1 py-0.5 rounded ${
-                                    report.status === 'confirmed' ? 'bg-green-100 text-green-700' : report.status === 'modified' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-600'
-                                  }`}>
-                                    {report.status === 'confirmed' ? '已确认' : report.status === 'modified' ? '已修改' : '草稿'}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2">{report.caseAnalysis?.substring(0, 200)}</p>
-                              </div>
-                            ) : null;
-                          })()}
-                        </div>
-                      )) : (
-                        <p className="text-sm text-[var(--color-text-light)] text-center py-4">暂无观察记录</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          ) : (
+          {/* 无数据提示 */}
+          {childrenCount === 0 && obsCount === 0 && reportsCount === 0 && (
             <div className="text-center py-12 text-sm text-[var(--color-text-light)] bg-white rounded-xl border border-[var(--color-border)]">
-              <BookUser className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p>暂无幼儿数据</p>
+              <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p>暂无数据</p>
+              <p className="text-xs mt-1">教师使用幼析或育见创建内容后，将在这里展示</p>
             </div>
           )}
         </div>
@@ -491,6 +425,9 @@ export default function DataManagement() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                       {u.role === 'admin' ? '管理员' : '教师'}
                     </span>
+                    {u.data?.班级 && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">{u.data.班级}</span>
+                    )}
                   </div>
                 </button>
                 {expandedUser === u.name && u.data && (

@@ -144,6 +144,27 @@ http.createServer((q,r)=>{
     return;
   }
 
+  // Admin: 批量更新幼儿班级
+  if(u==='/api/admin/update-children-classes'&&m==='POST'){
+    const au=getAuthUser(q.headers);
+    if(!au||au.name!=='王洋洋'){sendJSON(r,403,{error:'无权限'});return;}
+    readBody(q).then(async data=>{
+      try{
+        const updates=data.updates;
+        if(!Array.isArray(updates)){sendJSON(r,400,{error:'updates必须是数组'});return;}
+        let count=0;
+        for(const item of updates){
+          if(item.id&&item.class){
+            await store.update('children',item.id,{class:item.class});
+            count++;
+          }
+        }
+        sendJSON(r,200,{success:true,updated:count});
+      }catch(e){sendJSON(r,500,{error:e.message});}
+    }).catch(()=>sendJSON(r,400,{error:'无效的请求数据'}));
+    return;
+  }
+
   // Admin: COS备份
   if(u==='/api/admin/backup-to-cos'&&m==='POST'){
     const au=getAuthUser(q.headers);

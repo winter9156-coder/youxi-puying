@@ -101,13 +101,14 @@
     "username": "周岩",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuu/3/j.s.vlAENEof4DZdj9/UGUkJrFq",
     "role": "teacher",
-    "class": "教师",
+    "class": "建小一班",
     "data": {
       "姓名": "周岩",
       "角色": "教师",
       "编号": 7,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建小一班"
     }
   },
   "芦丽": {
@@ -116,13 +117,14 @@
     "username": "芦丽",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtu3uz6.ePW07eKOSF6b3LJYBIYfVIN5oO",
     "role": "teacher",
-    "class": "教师",
+    "class": "建小二班",
     "data": {
       "姓名": "芦丽",
       "角色": "教师",
       "编号": 8,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建小二班"
     }
   },
   "王文雪": {
@@ -131,13 +133,14 @@
     "username": "王文雪",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtujFAcBVsDsJCxa4Y5gE/OttOqYPXh0za",
     "role": "teacher",
-    "class": "教师",
+    "class": "建中一班",
     "data": {
       "姓名": "王文雪",
       "角色": "教师",
       "编号": 9,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建中一班"
     }
   },
   "徐可新": {
@@ -146,13 +149,14 @@
     "username": "徐可新",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuS3vBMu3aOkv1RUC6zkiw35JEGJHC4pq",
     "role": "teacher",
-    "class": "教师",
+    "class": "建中二班",
     "data": {
       "姓名": "徐可新",
       "角色": "教师",
       "编号": 10,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建中二班"
     }
   },
   "张建梅": {
@@ -161,13 +165,14 @@
     "username": "张建梅",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuGOUD2wip5anm5Z3yy.sgmnvJxVmvHbG",
     "role": "teacher",
-    "class": "教师",
+    "class": "建大一班",
     "data": {
       "姓名": "张建梅",
       "角色": "教师",
       "编号": 11,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建大一班"
     }
   },
   "孙乐": {
@@ -176,13 +181,14 @@
     "username": "孙乐",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuS7Py5k6YTDAzH/syFkUR40kVfurhmvi",
     "role": "teacher",
-    "class": "教师",
+    "class": "建大二班",
     "data": {
       "姓名": "孙乐",
       "角色": "教师",
       "编号": 12,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建大二班"
     }
   },
   "张冉": {
@@ -283,17 +289,18 @@
   },
   "邢佳杰": {
     "id": "d17d254a-7133-4e88-9cfb-7edd4c7b1d9d",
-    "name": "邢佳杰",
-    "username": "邢佳杰",
+    "name": "邢佳洁",
+    "username": "邢佳洁",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtu.4ib8Lb8iXobjTbltrijJkY7A3gUBpO",
     "role": "teacher",
-    "class": "教师",
+    "class": "建小一班",
     "data": {
-      "姓名": "邢佳杰",
+      "姓名": "邢佳洁",
       "角色": "教师",
       "编号": 19,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建小一班"
     }
   },
   "王旻姣": {
@@ -302,13 +309,14 @@
     "username": "王旻姣",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtupd9zRK7rTBwgHNvmInGtApfCG5Q/kUi",
     "role": "teacher",
-    "class": "教师",
+    "class": "建小二班",
     "data": {
       "姓名": "王旻姣",
       "角色": "教师",
       "编号": 20,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建小二班"
     }
   },
   "刘茜": {
@@ -317,13 +325,14 @@
     "username": "刘茜",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuE1BE2ZYrRTPB74LgobR.eNSgf3WKx.2",
     "role": "teacher",
-    "class": "教师",
+    "class": "建中一班",
     "data": {
       "姓名": "刘茜",
       "角色": "教师",
       "编号": 21,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建中一班"
     }
   },
   "谷雨": {
@@ -332,13 +341,14 @@
     "username": "谷雨",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtupgNDruAuILquRD2EYK9K1Mw.bNUQ2Om",
     "role": "teacher",
-    "class": "教师",
+    "class": "建中二班",
     "data": {
       "姓名": "谷雨",
       "角色": "教师",
       "编号": 22,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建中二班"
     }
   },
   "王玉": {
@@ -347,13 +357,14 @@
     "username": "王玉",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuDOm99K/aUWZ9hjji7.J/yFL/YJw2WnG",
     "role": "teacher",
-    "class": "教师",
+    "class": "建大一班",
     "data": {
       "姓名": "王玉",
       "角色": "教师",
       "编号": 23,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建大一班"
     }
   },
   "徐佳": {
@@ -362,13 +373,14 @@
     "username": "徐佳",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtu7Q6utsB7Ftls.Tz7GI73BJgouOvx9a6",
     "role": "teacher",
-    "class": "教师",
+    "class": "建大二班",
     "data": {
       "姓名": "徐佳",
       "角色": "教师",
       "编号": 24,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建大二班"
     }
   },
   "李亚洁": {
@@ -473,13 +485,14 @@
     "username": "程紫玉",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuNQLdJv1A0ZjTfviiVyuUcwC6VO36MBu",
     "role": "teacher",
-    "class": "教师",
+    "class": "建小一班",
     "data": {
       "姓名": "程紫玉",
       "角色": "教师",
       "编号": 31,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建小一班"
     }
   },
   "田鑫颖": {
@@ -488,13 +501,14 @@
     "username": "田鑫颖",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuJ3zwGKezIuN48QOJofxNvKbfaBZz4fG",
     "role": "teacher",
-    "class": "教师",
+    "class": "建小二班",
     "data": {
       "姓名": "田鑫颖",
       "角色": "教师",
       "编号": 32,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建小二班"
     }
   },
   "李一帆": {
@@ -503,13 +517,14 @@
     "username": "李一帆",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuhSMzueC30sYtzrTcuHDJFaUq/4dPd6.",
     "role": "teacher",
-    "class": "教师",
+    "class": "建中一班",
     "data": {
       "姓名": "李一帆",
       "角色": "教师",
       "编号": 33,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建中一班"
     }
   },
   "伊金宝": {
@@ -518,13 +533,14 @@
     "username": "伊金宝",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtu0lEo4/Op65Vv0fRPKbGdZrYu0FUxjnS",
     "role": "teacher",
-    "class": "教师",
+    "class": "建中二班",
     "data": {
       "姓名": "伊金宝",
       "角色": "教师",
       "编号": 34,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建中二班"
     }
   },
   "张淼": {
@@ -533,43 +549,30 @@
     "username": "张淼",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuFtykudu.PjuslxtqwMZ0BZCjIuNEyYq",
     "role": "teacher",
-    "class": "教师",
+    "class": "建大一班",
     "data": {
       "姓名": "张淼",
       "角色": "教师",
       "编号": 35,
       "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建大一班"
     }
   },
-  "李晓娇": {
+  "李晓姣": {
     "id": "3f9716b4-0e61-458c-a048-728523ca4772",
-    "name": "李晓娇",
-    "username": "李晓娇",
+    "name": "李晓姣",
+    "username": "李晓姣",
     "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtuOTPf9bM0gEIZgS0dgqvIPFioC9T3F7a",
     "role": "teacher",
-    "class": "教师",
+    "class": "建大二班",
     "data": {
-      "姓名": "李晓娇",
+      "姓名": "李晓姣",
       "角色": "教师",
       "编号": 36,
       "注册时间": "2026-05-20",
-      "状态": "正常"
-    }
-  },
-  "李雪彤": {
-    "id": "cd0f672d-72a9-4924-bd93-2b542d9e89c9",
-    "name": "李雪彤",
-    "username": "李雪彤",
-    "password": "$2b$10$yfEVHf.I.yYEywTd9sGOtujAVWUU3mrmuV3kFV621u.HLhNTawqXe",
-    "role": "teacher",
-    "class": "教师",
-    "data": {
-      "姓名": "李雪彤",
-      "角色": "教师",
-      "编号": 37,
-      "注册时间": "2026-05-20",
-      "状态": "正常"
+      "状态": "正常",
+      "班级": "建大二班"
     }
   },
   "李念东": {
