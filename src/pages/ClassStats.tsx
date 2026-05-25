@@ -17,13 +17,41 @@ export default function ClassStats() {
   const [stats, setStats] = useState<DomainStat[]>([]);
   const [totalObs, setTotalObs] = useState(0);
   const [totalChildren, setTotalChildren] = useState(0);
+  const [userClassName, setUserClassName] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const obs = await getAllObservations();
-      const children = await getAllChildren();
-      setTotalObs(obs.length);
-      setTotalChildren(children.length);
+      // 获取当前用户班级
+      let myClass = '';
+      let role = 'teacher';
+      try {
+        const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
+        role = u.role || 'teacher';
+        if (role === 'teacher') myClass = u.data?.班级 || '';
+      } catch {}
+      setIsAdmin(role === 'admin');
+      setUserClassName(myClass);
+
+      const allObs = await getAllObservations();
+      const allChildren = await getAllChildren();
+
+      let classChildren: Child[];
+      let classObs: Observation[];
+
+      if (myClass) {
+        // 教师：只统计本班级
+        classChildren = allChildren.filter(c => c.class === myClass);
+        const classChildIds = new Set(classChildren.map(c => c.id));
+        classObs = allObs.filter(o => o.childIds?.some(id => classChildIds.has(id)));
+      } else {
+        // 管理员：统计全部
+        classChildren = allChildren;
+        classObs = allObs;
+      }
+
+      setTotalObs(classObs.length);
+      setTotalChildren(classChildren.length);
 
       const domains: DomainStat[] = [
         { label: '语言领域', count: 0, children: [], icon: BookOpen, color: 'bg-blue-500' },
@@ -33,7 +61,7 @@ export default function ClassStats() {
         { label: '学习品质', count: 0, children: [], icon: Lightbulb, color: 'bg-teal-500' },
       ];
 
-      for (const c of children) {
+      for (const c of classChildren) {
         const reports = await getReportsByChild(c.id);
         const allText = reports.map(r => r.caseAnalysis).join(' ');
         domains.forEach(d => {
@@ -54,10 +82,16 @@ export default function ClassStats() {
         <ArrowLeft className="w-4 h-4" /> 返回工作台
       </button>
 
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-2">
         <BarChart3 className="w-6 h-6 text-[var(--color-primary)]" />
         <h1 className="text-2xl font-bold text-[var(--color-text-main)]">班级统计分析</h1>
       </div>
+      {userClassName && (
+        <div className="text-sm text-[var(--color-primary)] mb-6 font-medium">{userClassName}</div>
+      )}
+      {!isAdmin && !userClassName && (
+        <div className="text-sm text-orange-500 mb-6">未分配班级，显示全部数据</div>
+      )}
 
       {/* 概览卡片 */}
       <div className="grid grid-cols-3 gap-4 mb-6">

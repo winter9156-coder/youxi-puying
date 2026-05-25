@@ -183,6 +183,12 @@ function getMedia(id) {
   return { data: fs.readFileSync(filePath).toString('base64'), mimeType };
 }
 
+function clearTable(table) {
+  const fp = path.join(DATA_DIR, table + '.json');
+  if (fs.existsSync(fp)) { fs.writeFileSync(fp, '[]', 'utf-8'); return true; }
+  return true;
+}
+
 function deleteMedia(id) {
   ensureMediaDir();
   const filePath = path.join(MEDIA_DIR, id + '.bin');
@@ -193,4 +199,4 @@ function deleteMedia(id) {
   return ok;
 }
 
-module.exports = { get, getAll, insert, update, remove, query, getAllData, exportData, importData, getStats, TABLES, saveMedia, getMedia, deleteMedia };
+module.exports = { get, getAll, insert, update, remove, query, getAllData, exportData, importData, getStats, TABLES, saveMedia, getMedia, deleteMedia, clearTable };

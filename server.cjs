@@ -119,6 +119,21 @@ http.createServer((q,r)=>{
     return;
   }
 
+  // Admin: 清空观察记录和分析数据（保留幼儿、设置）
+  if(u==='/api/admin/clear-data'&&m==='POST'){
+    const au=getAuthUser(q.headers);
+    if(!au||au.name!=='王洋洋'){sendJSON(r,403,{error:'无权限'});return;}
+    (async()=>{
+      await store.clearTable('observations');
+      await store.clearTable('analysis_reports');
+      await store.clearTable('education_plans');
+      await store.clearTable('communication_records');
+      await store.clearTable('media');
+      sendJSON(r,200,{success:true,message:'已清空观察记录、分析报告、教育方案和媒体文件'});
+    })().catch(e=>sendJSON(r,500,{error:e.message}));
+    return;
+  }
+
   // Admin: 下载全部数据
   if(u==='/api/admin/data/download'&&m==='GET'){
     const au=getAuthUser(q.headers);

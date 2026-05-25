@@ -196,4 +196,11 @@ async function deleteMedia(id) {
   return r.rowCount > 0;
 }
 
-module.exports = { initSchema, get, getAll, insert, update, remove, query, getStats, getAllData, exportData, saveMedia, getMedia, deleteMedia };
+// 清空指定表的所有数据
+async function clearTable(table) {
+  const p = getPool();
+  await p.query(`DELETE FROM ${table}`);
+  return true;
+}
+
+module.exports = { initSchema, get, getAll, insert, update, remove, query, getStats, getAllData, exportData, saveMedia, getMedia, deleteMedia, clearTable };

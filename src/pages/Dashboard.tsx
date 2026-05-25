@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Eye, Lightbulb, HeartHandshake, FileText, Sparkles, MessageSquare, BarChart3, BookUser } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getAllObservations, getAllPlans } from '../db';
+import { getAllObservations, getAllPlans, getAllChildren } from '../db';
 import type { Observation, EducationPlan } from '../types';
 
 function StatCard({ label, value, icon: Icon, color }: {
@@ -46,10 +46,44 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [obsCount, setObsCount] = useState(0);
   const [planCount, setPlanCount] = useState(0);
+  const [childCount, setChildCount] = useState(0);
+  const [userClassName, setUserClassName] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    getAllObservations().then(list => setObsCount(list.length));
-    getAllPlans().then(list => setPlanCount(list.length));
+    (async () => {
+      // 获取当前用户班级
+      let myClass = '';
+      let role = 'teacher';
+      try {
+        const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
+        role = u.role || 'teacher';
+        if (role === 'teacher') myClass = u.data?.班级 || '';
+      } catch {}
+      setIsAdmin(role === 'admin');
+      setUserClassName(myClass);
+
+      const [allObs, allPlans, allChildren] = await Promise.all([
+        getAllObservations(),
+        getAllPlans(),
+        getAllChildren(),
+      ]);
+
+      if (myClass) {
+        // 教师：只统计本班级数据
+        const classChildIds = new Set(
+          allChildren.filter(c => c.class === myClass).map(c => c.id)
+        );
+        setChildCount(classChildIds.size);
+        setObsCount(allObs.filter(o => o.childIds?.some(id => classChildIds.has(id))).length);
+        setPlanCount(allPlans.filter(p => p.childIds?.some(id => classChildIds.has(id))).length);
+      } else {
+        // 管理员：统计全部
+        setChildCount(allChildren.length);
+        setObsCount(allObs.length);
+        setPlanCount(allPlans.length);
+      }
+    })();
   }, []);
 
   return (
@@ -59,6 +93,9 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-[var(--color-text-main)]">
             {new Date().getHours() < 12 ? '上午好' : new Date().getHours() < 18 ? '下午好' : '晚上好'} 👋
           </h1>
+          {userClassName && (
+            <div className="text-sm text-[var(--color-primary)] mt-1">{userClassName}</div>
+          )}
         </div>
         <div className="text-sm text-[var(--color-text-secondary)] mt-1">
           {new Date().getFullYear()}年{new Date().getMonth() + 1}月{new Date().getDate()}日
@@ -69,7 +106,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-3 gap-4 mb-8">
         <StatCard label="观察记录" value={obsCount} icon={Eye} color="bg-[var(--color-primary)]" />
         <StatCard label="已生成方案" value={planCount} icon={Lightbulb} color="bg-[var(--color-secondary)]" />
-        <StatCard label="幼儿档案" value={0} icon={HeartHandshake} color="bg-[#e8a87c]" />
+        <StatCard label={isAdmin ? '幼儿总数' : '在册幼儿'} value={childCount} icon={HeartHandshake} color="bg-[#e8a87c]" />
       </div>
 
       {/* Quick Actions */}
