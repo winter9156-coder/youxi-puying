@@ -238,7 +238,7 @@ http.createServer((q,r)=>{
   }
 
   // 获取某班级的教师名单（用于观察时间线过滤）
-  if(u==='/api/class-teachers'&&m==='GET'){
+  if(u.startsWith('/api/class-teachers')&&m==='GET'){
     const urlObj=new URL(u,'http://localhost'+q.url);
     const cls=decodeURIComponent(urlObj.searchParams.get('class')||'');
     if(!cls||!jsonUsers){sendJSON(r,200,{teachers:[]});return;}
