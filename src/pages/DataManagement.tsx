@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Download, RefreshCw, Cloud, Users, FileText, Eye, Lightbulb, MessageSquare, ChevronDown, ChevronRight, BookUser, Camera, Image, X, GraduationCap, Baby } from 'lucide-react';
+import { Download, RefreshCw, Cloud, Users, FileText, Eye, Lightbulb, ChevronDown, ChevronRight, GraduationCap, Baby, Camera, X, ZoomIn } from 'lucide-react';
 
 const API = '';
 
-const tableLabels: Record<string, string> = {
-  children: '幼儿档案', observations: '观察记录', analysis_reports: '分析报告',
-  education_plans: '教育方案', communication_records: '沟通记录',
-  teachers: '教师账号', classes: '班级', app_settings: '系统设置',
-};
+interface MediaItem {
+  id: string;
+  url: string;
+  loading: boolean;
+  error: boolean;
+}
 
 export default function DataManagement() {
   const [data, setData] = useState<Record<string, any[]> | null>(null);
@@ -18,44 +19,116 @@ export default function DataManagement() {
   const [backupMsg, setBackupMsg] = useState('');
   const [mode, setMode] = useState<'content' | 'tables'>('content');
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
-  const [mediaCache, setMediaCache] = useState<Record<string, string>>({});
-  const [loadingMedia, setLoadingMedia] = useState<Record<string, boolean>>({});
+  const [mediaMap, setMediaMap] = useState<Record<string, MediaItem>>({});
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const token = localStorage.getItem('edu_token');
   const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
-  const fetchData = async () => {
-    setLoading(true); setErrMsg('');
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setErrMsg('');
     try {
       const [dataRes, statsRes, usersRes] = await Promise.all([
         fetch(`${API}/api/admin/data`, { headers }),
         fetch(`${API}/api/admin/stats`, { headers }),
         fetch(`${API}/api/admin/users`, { headers }),
       ]);
-      if (!dataRes.ok || !statsRes.ok || !usersRes.ok) { setErrMsg('数据加载失败'); setLoading(false); return; }
+      if (!dataRes.ok || !statsRes.ok || !usersRes.ok) {
+        setErrMsg(`数据加载失败 (${[dataRes.status, statsRes.status, usersRes.status].join('/')})`);
+        setLoading(false);
+        return;
+      }
       const d = await dataRes.json();
       const s = await statsRes.json();
       const u = await usersRes.json();
-      setData(d); setStats(s); setUserData(u.users || []);
-    } catch (e) { setErrMsg('请求失败: ' + (e as Error).message); }
+      setData(d);
+      setStats(s);
+      setUserData(Array.isArray(u.users) ? u.users : []);
+    } catch (e: any) {
+      setErrMsg('请求失败: ' + (e?.message || '未知错误'));
+    }
     setLoading(false);
-  };
+  }, []);
+
+  const loadMediaForObs = useCallback(async (obs: any) => {
+    if (!obs?.mediaUrls?.length) return;
+    for (const mediaId of obs.mediaUrls) {
+      if (mediaMap[mediaId]?.url) continue;
+      setMediaMap(prev => ({ ...prev, [mediaId]: { id: mediaId, url: '', loading: true, error: false } }));
+      try {
+        const res = await fetch(`/api/media/${mediaId}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const blob = await res.blob();
+        if (blob && blob.size > 0) {
+          const url = URL.createObjectURL(blob);
+          setMediaMap(prev => ({ ...prev, [mediaId]: { id: mediaId, url, loading: false, error: false } }));
+        } else {
+          setMediaMap(prev => ({ ...prev, [mediaId]: { id: mediaId, url: '', loading: false, error: true } }));
+        }
+      } catch {
+        setMediaMap(prev => ({ ...prev, [mediaId]: { id: mediaId, url: '', loading: false, error: true } }));
+      }
+    }
+  }, [mediaMap]);
+
+  const downloadSingleMedia = useCallback(async (mediaId: string, filename: string) => {
+    try {
+      const res = await fetch(`/api/media/${mediaId}`);
+      if (!res.ok) { alert('文件不存在或已过期'); return; }
+      const blob = await res.blob();
+      const ct = blob.type || '';
+      const ext = ct.includes('png') ? 'png' : ct.includes('jpeg') || ct.includes('jpg') ? 'jpg' : ct.includes('gif') ? 'gif' : ct.includes('webp') ? 'webp' : 'bin';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename + '.' + ext;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    } catch (e: any) {
+      alert('下载失败: ' + (e?.message || ''));
+    }
+  }, []);
+
+  const downloadAllMedia = useCallback(async (obs: any) => {
+    if (!obs?.mediaUrls?.length) { alert('该记录没有附件'); return; }
+    const teacherName = obs.teacherName || '未知教师';
+    const date = obs.date || 'unknown';
+    for (let i = 0; i < obs.mediaUrls.length; i++) {
+      await downloadSingleMedia(obs.mediaUrls[i], `${teacherName}_${date}_照片${i + 1}`);
+    }
+  }, [downloadSingleMedia]);
 
   const downloadAll = async () => {
-    const res = await fetch(`${API}/api/admin/data/download`, { headers });
-    const blob = await res.blob();
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `youxi-full-data-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
+    try {
+      const res = await fetch(`${API}/api/admin/data/download`, { headers });
+      if (!res.ok) { alert('下载失败'); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `幼析育见-全量数据-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    } catch (e: any) {
+      alert('下载失败: ' + (e?.message || ''));
+    }
   };
 
   const downloadUserData = () => {
     const blob = new Blob([JSON.stringify(userData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    a.href = url;
     a.download = `用户数据包-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
   };
 
   const backupToCOS = async () => {
@@ -64,19 +137,28 @@ export default function DataManagement() {
       const res = await fetch(`${API}/api/admin/backup-to-cos`, { method: 'POST', headers });
       const d = await res.json();
       setBackupMsg(d.success ? '备份成功！已保存到 COS' : `备份失败: ${d.error}`);
-    } catch (e) { setBackupMsg(`备份失败: ${(e as Error).message}`); }
+    } catch (e: any) { setBackupMsg(`备份失败: ${(e as Error).message}`); }
     setTimeout(() => setBackupMsg(''), 5000);
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   // 数据加载后自动加载所有观察记录的媒体
   useEffect(() => {
-    if (!data?.observations) return;
+    if (!data?.observations?.length) return;
     data.observations.forEach((o: any) => {
       if (o.mediaUrls?.length) loadMediaForObs(o);
     });
   }, [data, loadMediaForObs]);
+
+  // 清理 media URLs
+  useEffect(() => {
+    return () => {
+      Object.values(mediaMap).forEach(m => {
+        if (m.url) URL.revokeObjectURL(m.url);
+      });
+    };
+  }, []);
 
   // 按班级统计幼儿
   function getClassChildren() {
@@ -107,51 +189,6 @@ export default function DataManagement() {
   const classTeachers = getClassTeachers();
   const allClasses = Array.from(new Set([...Object.keys(classChildren), ...Object.keys(classTeachers)])).sort();
 
-  const loadMediaForObs = useCallback(async (obs: any): Promise<string[]> => {
-    if (!obs?.mediaUrls?.length) return [];
-    const urls: string[] = [];
-    for (const mediaId of obs.mediaUrls) {
-      if (mediaCache[mediaId]) { urls.push(mediaCache[mediaId]); continue; }
-      try {
-        const res = await fetch(`/api/media/${mediaId}`);
-        if (!res.ok) throw new Error('加载失败');
-        const blob = await res.blob();
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          setMediaCache(prev => ({ ...prev, [mediaId]: url }));
-          urls.push(url);
-        }
-      } catch (e) { console.error('加载媒体失败', mediaId, e); }
-    }
-    return urls;
-  }, [mediaCache]);
-
-  const downloadMedia = useCallback(async (mediaId: string, index: number) => {
-    try {
-      const res = await fetch(`/api/media/${mediaId}`);
-      if (!res.ok) { alert('文件不存在'); return; }
-      const blob = await res.blob();
-      const ext = blob.type.includes('png') ? 'png' : blob.type.includes('jpeg') || blob.type.includes('jpg') ? 'jpg' : 'bin';
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `观察照片_${index + 1}.${ext}`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (e: any) { alert('下载失败: ' + e.message); }
-  }, []);
-
-  const downloadObsMedia = useCallback(async (obs: any) => {
-    if (!obs?.mediaUrls?.length) return;
-    for (let i = 0; i < obs.mediaUrls.length; i++) {
-      await downloadMedia(obs.mediaUrls[i], i);
-    }
-  }, [downloadMedia]);
-
-  useEffect(() => {
-    return () => { Object.values(mediaCache).forEach(url => URL.revokeObjectURL(url)); };
-  }, []);
-
   const obsCount = data?.observations?.length || 0;
   const reportsCount = data?.analysis_reports?.length || 0;
   const plansCount = data?.education_plans?.length || 0;
@@ -160,6 +197,20 @@ export default function DataManagement() {
 
   return (
     <div className="space-y-6">
+      {/* 图片预览弹窗 */}
+      {previewImage && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-8"
+          onClick={() => setPreviewImage(null)}>
+          <div className="relative max-w-4xl max-h-full">
+            <button onClick={() => setPreviewImage(null)}
+              className="absolute -top-10 right-0 text-white/80 hover:text-white text-sm flex items-center gap-1">
+              <X className="w-4 h-4" /> 关闭
+            </button>
+            <img src={previewImage} alt="预览" className="max-w-full max-h-[80vh] rounded-lg shadow-2xl" />
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -172,11 +223,11 @@ export default function DataManagement() {
         <div className="flex gap-2">
           <button onClick={downloadUserData}
             className="flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] rounded-xl text-sm font-medium hover:bg-[var(--color-warm-bg)] transition-colors">
-            <Users className="w-4 h-4" /> 下载用户包
+            <Users className="w-4 h-4" /> 用户包
           </button>
           <button onClick={downloadAll}
             className="flex items-center gap-1.5 px-3 py-2 bg-[var(--color-primary)] text-white rounded-xl text-sm font-medium hover:bg-[var(--color-primary-dark)] transition-colors">
-            <Download className="w-4 h-4" /> 下载全部
+            <Download className="w-4 h-4" /> 全部数据
           </button>
           <button onClick={backupToCOS}
             className="flex items-center gap-1.5 px-3 py-2 border border-[var(--color-border)] rounded-xl text-sm font-medium hover:bg-[var(--color-warm-bg)] transition-colors">
@@ -189,7 +240,9 @@ export default function DataManagement() {
         </div>
       </div>
 
-      {backupMsg && <div className="px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-sm">{backupMsg}</div>}
+      {backupMsg && (
+        <div className="px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700">{backupMsg}</div>
+      )}
 
       {/* 模式切换 */}
       <div className="flex gap-2">
@@ -203,11 +256,27 @@ export default function DataManagement() {
         </button>
       </div>
 
+      {/* 加载中 */}
+      {loading && (
+        <div className="flex items-center justify-center py-20">
+          <RefreshCw className="w-6 h-6 mr-2 animate-spin text-[var(--color-primary)]" />
+          <span className="text-sm text-[var(--color-text-light)]">加载数据中...</span>
+        </div>
+      )}
+
+      {/* 错误 */}
+      {errMsg && !loading && (
+        <div className="text-center py-12">
+          <p className="text-sm text-red-500 mb-4">{errMsg}</p>
+          <button onClick={fetchData} className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl text-sm">重新加载</button>
+        </div>
+      )}
+
       {/* ===== 数据总览 ===== */}
-      {mode === 'content' && data && (
+      {mode === 'content' && data && !loading && !errMsg && (
         <div className="space-y-4">
-          {/* 数据概览卡片 */}
-          <div className="grid grid-cols-5 gap-3">
+          {/* 统计卡片 */}
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {[
               { icon: GraduationCap, label: '班级', count: allClasses.length, color: 'text-indigo-600 bg-indigo-50' },
               { icon: Baby, label: '幼儿', count: childrenCount, color: 'text-blue-600 bg-blue-50' },
@@ -225,111 +294,123 @@ export default function DataManagement() {
             ))}
           </div>
 
-          {/* 按班级汇总 */}
+          {/* 按班级汇总（始终显示） */}
           {allClasses.length > 0 && (
             <div className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden">
               <div className="px-5 py-4 border-b border-[var(--color-border)]">
                 <h3 className="text-sm font-bold text-[var(--color-text-main)]">
                   <GraduationCap className="w-4 h-4 inline mr-1.5" />
-                  班级汇总（{allClasses.length}个班级）
+                  班级汇总（{allClasses.length}个班级 · {(classTeachers['未分班'] || []).filter(t => !t.data?.班级).length > 0 ? '含未分班教师' : '全部分配'}）
                 </h3>
               </div>
               <div className="divide-y divide-[var(--color-border)]">
-                {allClasses.map(cls => (
-                  <div key={cls}>
-                    <button onClick={() => setExpandedUser(expandedUser === `cls-${cls}` ? null : `cls-${cls}`)}
-                      className="w-full flex items-center justify-between px-5 py-3 hover:bg-[var(--color-warm-bg)] transition-colors text-left">
-                      <div className="flex items-center gap-3">
-                        {expandedUser === `cls-${cls}` ? <ChevronDown className="w-4 h-4 text-[var(--color-text-light)]" /> : <ChevronRight className="w-4 h-4 text-[var(--color-text-light)]" />}
-                        <span className="text-sm font-medium text-[var(--color-text-main)]">{cls}</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{(classChildren[cls] || []).length} 名幼儿</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">{(classTeachers[cls] || []).length} 名教师</span>
-                      </div>
-                    </button>
-                    {expandedUser === `cls-${cls}` && (
-                      <div className="px-5 pb-3 pl-14 space-y-2">
-                        {/* 教师列表 */}
-                        {(classTeachers[cls] || []).length > 0 && (
+                {allClasses.map(cls => {
+                  const teachers = classTeachers[cls] || [];
+                  const children = classChildren[cls] || [];
+                  const isExpanded = expandedUser === `cls-${cls}`;
+                  return (
+                    <div key={cls}>
+                      <button onClick={() => setExpandedUser(isExpanded ? null : `cls-${cls}`)}
+                        className="w-full flex items-center justify-between px-5 py-3 hover:bg-[var(--color-warm-bg)] transition-colors text-left">
+                        <div className="flex items-center gap-3">
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-[var(--color-text-light)]" /> : <ChevronRight className="w-4 h-4 text-[var(--color-text-light)]" />}
+                          <span className="text-sm font-medium text-[var(--color-text-main)]">{cls}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">{teachers.length} 名教师</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{children.length} 名幼儿</span>
+                        </div>
+                      </button>
+                      {isExpanded && (
+                        <div className="px-5 pb-3 pl-14 space-y-2">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs text-[var(--color-text-light)]">教师：</span>
-                            {(classTeachers[cls] || []).map((t: any) => (
-                              <span key={t.name} className="text-xs px-2 py-0.5 rounded bg-green-50 text-green-700">{t.name}</span>
-                            ))}
+                            {teachers.length > 0 ? teachers.map((t: any) => (
+                              <span key={t.id || t.name} className="text-xs px-2 py-0.5 rounded bg-green-50 text-green-700 font-medium">{t.name}</span>
+                            )) : <span className="text-xs text-gray-400">暂无</span>}
                           </div>
-                        )}
-                        {/* 幼儿列表 */}
-                        {(classChildren[cls] || []).length > 0 && (
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs text-[var(--color-text-light)]">幼儿：</span>
-                            {(classChildren[cls] || []).map((c: any) => (
+                            {children.length > 0 ? children.map((c: any) => (
                               <span key={c.id} className="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700">{c.name}</span>
-                            ))}
+                            )) : <span className="text-xs text-gray-400">暂无</span>}
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* 观察记录详情 */}
-          {data.observations && data.observations.length > 0 && (
+          {obsCount > 0 && (
             <div className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden">
               <div className="px-5 py-4 border-b border-[var(--color-border)]">
                 <h3 className="text-sm font-bold text-[var(--color-text-main)]">
                   <Eye className="w-4 h-4 inline mr-1.5" />
-                  观察记录（{data.observations.length}条）
+                  观察记录（{obsCount}条）— 含 {Object.keys(mediaMap).length} 个媒体文件
                 </h3>
               </div>
               <div className="divide-y divide-[var(--color-border)]">
                 {data.observations.map((o: any) => (
                   <div key={o.id} className="px-5 py-4">
+                    {/* 元信息行 */}
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className="text-xs font-medium text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded">
-                        {o.date}
-                      </span>
-                      {o.context && (
-                        <span className="text-xs text-[var(--color-text-light)]">{o.context}</span>
-                      )}
                       {o.teacherName && (
-                        <span className="text-xs text-[var(--color-text-secondary)] bg-gray-100 px-2 py-0.5 rounded">
+                        <span className="text-xs font-medium text-white bg-[var(--color-primary)] px-2 py-0.5 rounded">
                           {o.teacherName}
                         </span>
                       )}
+                      <span className="text-xs text-[var(--color-text-light)] bg-gray-100 px-2 py-0.5 rounded">
+                        {o.date || '未知日期'}
+                      </span>
+                      {o.context && (
+                        <span className="text-xs text-[var(--color-text-secondary)]">{o.context}</span>
+                      )}
                       {o.mediaUrls?.length > 0 && (
-                        <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                          {o.mediaUrls.length} 张
+                        <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                          <Camera className="w-3 h-3" /> {o.mediaUrls.length} 张
                         </span>
                       )}
                     </div>
+                    {/* 观察描述 */}
                     {o.whiteDescription && (
-                      <p className="text-sm text-[var(--color-text-main)] line-clamp-3 leading-relaxed mb-2">
+                      <p className="text-sm text-[var(--color-text-main)] leading-relaxed mb-2 whitespace-pre-wrap">
                         {o.whiteDescription}
                       </p>
                     )}
+                    {/* 媒体文件 */}
                     {o.mediaUrls?.length > 0 && (
-                      <div className="flex items-center gap-2 flex-wrap mt-1">
-                        {o.mediaUrls.map((mediaId: string, i: number) => (
-                          <div key={mediaId} className="relative">
-                            {mediaCache[mediaId] ? (
-                              <img src={mediaCache[mediaId]} alt={`照片${i+1}`}
-                                className="w-14 h-14 object-cover rounded border border-[var(--color-border)] cursor-pointer hover:opacity-80"
-                                onClick={(e) => { e.stopPropagation(); window.open(mediaCache[mediaId], '_blank'); }}
-                              />
-                            ) : (
-                              <div className="w-14 h-14 bg-gray-100 rounded border border-[var(--color-border)] flex items-center justify-center text-xs text-gray-400">
-                                加载中
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); downloadObsMedia(o); }}
-                          className="ml-1 text-xs text-[var(--color-primary)] hover:underline flex items-center gap-0.5 self-end pb-1"
-                        >
-                          下载全部
+                      <div className="flex items-start gap-2 flex-wrap mt-2">
+                        {o.mediaUrls.map((mediaId: string, i: number) => {
+                          const media = mediaMap[mediaId];
+                          return (
+                            <div key={mediaId} className="relative group">
+                              {media?.url ? (
+                                <img src={media.url} alt={`照片${i + 1}`}
+                                  className="w-20 h-20 object-cover rounded-lg border border-[var(--color-border)] cursor-pointer hover:opacity-80 transition-opacity"
+                                  onClick={() => setPreviewImage(media.url)}
+                                />
+                              ) : media?.loading ? (
+                                <div className="w-20 h-20 bg-gray-100 rounded-lg border border-[var(--color-border)] flex items-center justify-center">
+                                  <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
+                                </div>
+                              ) : (
+                                <div className="w-20 h-20 bg-gray-50 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-xs text-gray-400">
+                                  加载失败
+                                </div>
+                              )}
+                              {/* 单张下载按钮 */}
+                              <button onClick={() => downloadSingleMedia(mediaId, `照片${i + 1}`)}
+                                className="absolute bottom-1 right-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Download className="w-3 h-3" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                        <button onClick={() => downloadAllMedia(o)}
+                          className="ml-1 text-xs text-[var(--color-primary)] hover:underline flex items-center gap-1 self-end pb-1">
+                          <Download className="w-3 h-3" /> 下载全部
                         </button>
                       </div>
                     )}
@@ -340,12 +421,12 @@ export default function DataManagement() {
           )}
 
           {/* 分析报告详情 */}
-          {data.analysis_reports && data.analysis_reports.length > 0 && (
+          {reportsCount > 0 && (
             <div className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden">
               <div className="px-5 py-4 border-b border-[var(--color-border)]">
                 <h3 className="text-sm font-bold text-[var(--color-text-main)]">
                   <FileText className="w-4 h-4 inline mr-1.5" />
-                  分析报告（{data.analysis_reports.length}份）
+                  分析报告（{reportsCount}份）
                 </h3>
               </div>
               <div className="divide-y divide-[var(--color-border)]">
@@ -353,8 +434,8 @@ export default function DataManagement() {
                   <div key={r.id} className="px-5 py-4">
                     {r.caseAnalysis && (
                       <div className="text-sm text-[var(--color-text-main)] whitespace-pre-wrap line-clamp-4 leading-relaxed bg-[var(--color-warm-bg)] rounded-xl p-3">
-                        {r.caseAnalysis.substring(0, 300)}
-                        {r.caseAnalysis.length > 300 && '...'}
+                        {r.caseAnalysis.substring(0, 500)}
+                        {r.caseAnalysis.length > 500 && '...'}
                       </div>
                     )}
                     <div className="flex items-center gap-2 mt-2">
@@ -372,12 +453,12 @@ export default function DataManagement() {
           )}
 
           {/* 全部幼儿列表 */}
-          {data.children && data.children.length > 0 && (
+          {childrenCount > 0 && (
             <div className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden">
               <div className="px-5 py-4 border-b border-[var(--color-border)]">
                 <h3 className="text-sm font-bold text-[var(--color-text-main)]">
                   <Baby className="w-4 h-4 inline mr-1.5" />
-                  全部幼儿（{data.children.length}名）
+                  全部幼儿（{childrenCount}名）
                 </h3>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-px bg-[var(--color-border)]">
@@ -391,12 +472,13 @@ export default function DataManagement() {
             </div>
           )}
 
-          {/* 无数据提示 */}
-          {childrenCount === 0 && obsCount === 0 && reportsCount === 0 && (
+          {/* 无数据提示（仅当所有数据项都为空时显示） */}
+          {childrenCount === 0 && obsCount === 0 && reportsCount === 0 && plansCount === 0 && (
             <div className="text-center py-12 text-sm text-[var(--color-text-light)] bg-white rounded-xl border border-[var(--color-border)]">
               <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p>暂无数据</p>
-              <p className="text-xs mt-1">教师使用幼析或育见创建内容后，将在这里展示</p>
+              <p>暂无观察记录和分析报告</p>
+              <p className="text-xs mt-1">教师使用「幼析」创建观察记录后，将在这里展示（含图片和文字）</p>
+              <p className="text-xs mt-1">教师使用「育见」创建教育方案后，也将在这里展示</p>
             </div>
           )}
         </div>
@@ -415,52 +497,41 @@ export default function DataManagement() {
             </button>
           </div>
           <div className="divide-y divide-[var(--color-border)]">
-            {userData.map((u: any) => (
-              <div key={u.name}>
-                <button onClick={() => setExpandedUser(expandedUser === u.name ? null : u.name)}
-                  className="w-full flex items-center justify-between px-5 py-3 hover:bg-[var(--color-warm-bg)] transition-colors text-left">
-                  <div className="flex items-center gap-3">
-                    {expandedUser === u.name ? <ChevronDown className="w-4 h-4 text-[var(--color-text-light)]" /> : <ChevronRight className="w-4 h-4 text-[var(--color-text-light)]" />}
-                    <span className="text-sm font-medium text-[var(--color-text-main)]">{u.name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {u.role === 'admin' ? '管理员' : '教师'}
-                    </span>
-                    {u.data?.班级 && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">{u.data.班级}</span>
-                    )}
-                  </div>
-                </button>
-                {expandedUser === u.name && u.data && (
-                  <div className="px-5 pb-3 pl-14">
-                    <div className="bg-[var(--color-warm-bg)] rounded-xl p-3">
-                      <div className="grid grid-cols-2 gap-2">
-                        {Object.entries(u.data).map(([key, val]) => (
-                          <div key={key} className="flex items-center gap-2">
-                            <span className="text-xs text-[var(--color-text-light)]">{key}：</span>
-                            <span className="text-xs font-medium text-[var(--color-text-main)]">{String(val)}</span>
-                          </div>
-                        ))}
+            {userData.map((u: any) => {
+              const isExpanded = expandedUser === u.name;
+              return (
+                <div key={u.id || u.name}>
+                  <button onClick={() => setExpandedUser(isExpanded ? null : u.name)}
+                    className="w-full flex items-center justify-between px-5 py-3 hover:bg-[var(--color-warm-bg)] transition-colors text-left">
+                    <div className="flex items-center gap-3">
+                      {isExpanded ? <ChevronDown className="w-4 h-4 text-[var(--color-text-light)]" /> : <ChevronRight className="w-4 h-4 text-[var(--color-text-light)]" />}
+                      <span className="text-sm font-medium text-[var(--color-text-main)]">{u.name}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {u.role === 'admin' ? '管理员' : '教师'}
+                      </span>
+                      {u.data?.班级 && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">{u.data.班级}</span>
+                      )}
+                    </div>
+                  </button>
+                  {isExpanded && u.data && (
+                    <div className="px-5 pb-3 pl-14">
+                      <div className="bg-[var(--color-warm-bg)] rounded-xl p-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          {Object.entries(u.data).map(([key, val]) => (
+                            <div key={key} className="flex items-center gap-2">
+                              <span className="text-xs text-[var(--color-text-light)]">{key}：</span>
+                              <span className="text-xs font-medium text-[var(--color-text-main)]">{String(val)}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              );
+            })}
           </div>
-        </div>
-      )}
-
-      {errMsg && (
-        <div className="text-center py-12">
-          <p className="text-sm text-red-500 mb-4">{errMsg}</p>
-          <button onClick={fetchData} className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl text-sm">重新加载</button>
-        </div>
-      )}
-
-      {loading && (
-        <div className="flex items-center justify-center py-20">
-          <RefreshCw className="w-6 h-6 mr-2 animate-spin text-[var(--color-primary)]" />
-          <span className="text-sm text-[var(--color-text-light)]">加载中...</span>
         </div>
       )}
     </div>
