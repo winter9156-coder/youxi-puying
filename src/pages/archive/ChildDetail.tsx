@@ -113,8 +113,17 @@ export default function ChildDetail() {
     (async () => {
       const c = await getChild(id);
       setChild(c || null);
-      const obs = await getObservationsByChild(id);
-      setObservations(obs);
+      const allObs = await getObservationsByChild(id);
+      // 教师只看自己写的观察记录（按 teacherName 匹配），管理员看全部
+      let filtered = allObs;
+      try {
+        const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
+        const isAdmin = u.data?.role === 'admin' || u.name === '王洋洋';
+        if (!isAdmin && u.name) {
+          filtered = allObs.filter(o => o.teacherName === u.name);
+        }
+      } catch {}
+      setObservations(filtered);
       setReports(await getReportsByChild(id));
       // 加载上次保存的小结
       if (c?.notes?.includes('【学期发展小结】')) {
