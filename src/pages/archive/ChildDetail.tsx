@@ -312,7 +312,6 @@ export default function ChildDetail() {
             </p>
             <div className="flex items-center gap-4 mt-2 text-xs text-[var(--color-text-light)]">
               <span>观察记录：{observations.length} 条</span>
-              <span>分析报告：{reports.length} 份</span>
             </div>
           </div>
         </div>
