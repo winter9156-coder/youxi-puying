@@ -134,6 +134,17 @@ http.createServer((q,r)=>{
     return;
   }
 
+  // Admin: 清空幼儿
+  if(u==='/api/admin/clear-children'&&m==='POST'){
+    const au=getAuthUser(q.headers);
+    if(!au||au.name!=='王洋洋'){sendJSON(r,403,{error:'无权限'});return;}
+    (async()=>{
+      await store.clearTable('children');
+      sendJSON(r,200,{success:true,message:'已清空所有幼儿档案'});
+    })().catch(e=>sendJSON(r,500,{error:e.message}));
+    return;
+  }
+
   // Admin: 下载全部数据
   if(u==='/api/admin/data/download'&&m==='GET'){
     const au=getAuthUser(q.headers);
