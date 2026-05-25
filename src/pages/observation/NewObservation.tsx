@@ -124,8 +124,26 @@ export default function NewObservation() {
     setIsRecording(true);
   };
 
+  const [userClass, setUserClass] = useState<string>('');
+  const [isAdmin, setIsAdmin] = useState(false);
+
   useEffect(() => {
-    getAllChildren().then(setChildren);
+    try {
+      const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
+      const cls = u.data?.班级 || '';
+      const admin = u.data?.role === 'admin' || u.name === '王洋洋';
+      setUserClass(cls);
+      setIsAdmin(admin);
+    } catch {}
+    getAllChildren().then(all => {
+      if (isAdmin) {
+        setChildren(all);
+      } else {
+        // 按教师班级过滤幼儿
+        const teacherClass = JSON.parse(localStorage.getItem('edu_user') || '{}').data?.班级 || '';
+        setChildren(all.filter(c => c.class === teacherClass));
+      }
+    });
   }, []);
 
   const handleAddPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -233,7 +251,11 @@ export default function NewObservation() {
     const child: Child = {
       id: crypto.randomUUID(),
       name,
-      birthDate: '', class: '', tags: [], notes: '', createdAt: new Date().toISOString(),
+      birthDate: '',
+      class: userClass,
+      tags: [],
+      notes: '',
+      createdAt: new Date().toISOString(),
     };
     await saveChild(child);
     setChildren(prev => [...prev, child]);
