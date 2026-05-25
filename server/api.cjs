@@ -46,7 +46,10 @@ function createRouter() {
             send(200, rows[0] || null);
           } else if (table === 'observations' && qs.includes('childId=')) {
             const childId = qs.split('childId=')[1].split('&')[0];
-            const rows = await store.query('SELECT * FROM observations WHERE child_ids LIKE ?', [`%${childId}%`]);
+            // 使用 PostgreSQL JSONB @> 操作符精确匹配 childIds 数组
+            const rows = store.queryObservationsByChildId
+              ? await store.queryObservationsByChildId(childId)
+              : await store.query('SELECT * FROM observations WHERE child_ids LIKE ?', [`%"${childId}"%`]);
             send(200, rows);
           } else if (table === 'analysis_reports' && qs.includes('childId=')) {
             const childId = qs.split('childId=')[1].split('&')[0];

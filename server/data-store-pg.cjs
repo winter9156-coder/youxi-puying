@@ -141,6 +141,17 @@ async function query(sql, params) {
   return r.rows.map(row => ({ id: row.id, ...row.data }));
 }
 
+// 精确查询 observations 表中 childIds 包含指定 childId 的记录
+async function queryObservationsByChildId(childId) {
+  const p = getPool();
+  // PostgreSQL JSONB 数组包含查询：data->'childIds' @> '[childId]'::jsonb
+  const r = await p.query(
+    "SELECT id, data FROM observations WHERE data->'childIds' @> $1::jsonb ORDER BY data->>'createdAt' DESC",
+    [JSON.stringify([childId])]
+  );
+  return r.rows.map(row => ({ id: row.id, ...row.data }));
+}
+
 // 统计
 async function getStats() {
   const p = getPool();
@@ -203,4 +214,4 @@ async function clearTable(table) {
   return true;
 }
 
-module.exports = { initSchema, get, getAll, insert, update, remove, query, getStats, getAllData, exportData, saveMedia, getMedia, deleteMedia, clearTable };
+module.exports = { initSchema, get, getAll, insert, update, remove, query, queryObservationsByChildId, getStats, getAllData, exportData, saveMedia, getMedia, deleteMedia, clearTable };
