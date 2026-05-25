@@ -114,13 +114,18 @@ export default function ChildDetail() {
       const c = await getChild(id);
       setChild(c || null);
       const allObs = await getObservationsByChild(id);
-      // 教师只看自己写的观察记录（按 teacherName 匹配），管理员看全部
+      // 教师只看同班教师写的观察记录，管理员看全部
       let filtered = allObs;
       try {
         const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
         const isAdmin = u.data?.role === 'admin' || u.name === '王洋洋';
-        if (!isAdmin && u.name) {
-          filtered = allObs.filter(o => o.teacherName === u.name);
+        if (!isAdmin && c) {
+          const teacherClass = u.data?.班级 || '';
+          if (teacherClass && c.class && teacherClass !== c.class) {
+            // 教师班级与幼儿班级不同，不显示（安全兜底）
+            filtered = [];
+          }
+          // 同班则显示全部观察记录（所有同班老师写的都可见）
         }
       } catch {}
       setObservations(filtered);
