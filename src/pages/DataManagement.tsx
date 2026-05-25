@@ -388,13 +388,48 @@ export default function DataManagement() {
                     <div className="px-5 pb-4 space-y-2">
                       {childObs.length > 0 ? childObs.map((obs: any) => (
                         <div key={obs.id} className="bg-[var(--color-warm-bg)] rounded-xl p-3 border border-[var(--color-border)]">
-                          <div className="flex items-center gap-2 mb-1.5">
+                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                             <span className="text-xs font-medium text-[var(--color-primary)]">📅 {obs.date}</span>
                             {obs.context && <span className="text-xs text-[var(--color-text-light)]">📍 {obs.context}</span>}
+                            {obs.teacherName && (
+                              <span className="text-xs text-[var(--color-text-secondary)] bg-gray-100 px-2 py-0.5 rounded">
+                                👩‍🏫 {obs.teacherName}
+                              </span>
+                            )}
+                            {obs.mediaUrls?.length > 0 && (
+                              <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                                📷 {obs.mediaUrls.length} 张
+                              </span>
+                            )}
                           </div>
                           <p className="text-sm text-[var(--color-text-main)] leading-relaxed whitespace-pre-wrap line-clamp-4">
                             {obs.whiteDescription}
                           </p>
+                          {/* 媒体缩略图 */}
+                          {obs.mediaUrls?.length > 0 && (
+                            <div className="flex items-center gap-2 flex-wrap mt-2">
+                              {obs.mediaUrls.map((mediaId: string, i: number) => (
+                                <div key={mediaId} className="relative">
+                                  {mediaCache[mediaId] ? (
+                                    <img src={mediaCache[mediaId]} alt={`照片${i+1}`}
+                                      className="w-14 h-14 object-cover rounded border border-[var(--color-border)] cursor-pointer hover:opacity-80"
+                                      onClick={(e) => { e.stopPropagation(); window.open(mediaCache[mediaId], '_blank'); }}
+                                    />
+                                  ) : (
+                                    <div className="w-14 h-14 bg-gray-100 rounded border border-[var(--color-border)] flex items-center justify-center text-xs text-gray-400">
+                                      加载中
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); downloadObsMedia(obs); }}
+                                className="ml-1 text-xs text-[var(--color-primary)] hover:underline flex items-center gap-0.5 self-end pb-1"
+                              >
+                                ⬇ 下载全部
+                              </button>
+                            </div>
+                          )}
                           {obs.whiteDescription && obs.whiteDescription.length > 100 && (
                             <button onClick={(e) => { e.stopPropagation(); }}
                               className="text-xs text-[var(--color-primary)] hover:underline mt-1">展开全部</button>
