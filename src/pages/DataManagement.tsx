@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Download, RefreshCw, Cloud, Users, FileText, Eye, Lightbulb, MessageSquare, ChevronDown, ChevronRight, BookUser } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Download, RefreshCw, Cloud, Users, FileText, Eye, Lightbulb, MessageSquare, ChevronDown, ChevronRight, BookUser, Camera, Image, X } from 'lucide-react';
 
 const API = '';
 
@@ -18,6 +18,8 @@ export default function DataManagement() {
   const [backupMsg, setBackupMsg] = useState('');
   const [mode, setMode] = useState<'content' | 'tables'>('content');
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [mediaCache, setMediaCache] = useState<Record<string, string>>({});
+  const [loadingMedia, setLoadingMedia] = useState<Record<string, boolean>>({});
 
   const token = localStorage.getItem('edu_token');
   const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
@@ -68,6 +70,14 @@ export default function DataManagement() {
 
   useEffect(() => { fetchData(); }, []);
 
+  // 数据加载后自动加载所有观察记录的媒体
+  useEffect(() => {
+    if (!data?.observations) return;
+    data.observations.forEach((o: any) => {
+      if (o.mediaUrls?.length) loadMediaForObs(o);
+    });
+  }, [data, loadMediaForObs]);
+
   // 合并用户数据与内容
   function getUserContent() {
     if (!data) return [];
@@ -105,6 +115,55 @@ export default function DataManagement() {
   }
 
   const content = getUserContent();
+
+  // 加载单条观察记录的所有媒体，返回 object URL 数组（带缓存）
+  const loadMediaForObs = useCallback(async (obs: any): Promise<string[]> => {
+    if (!obs?.mediaUrls?.length) return [];
+    const urls: string[] = [];
+    for (const mediaId of obs.mediaUrls) {
+      if (mediaCache[mediaId]) { urls.push(mediaCache[mediaId]); continue; }
+      try {
+        const res = await fetch(`/api/media/${mediaId}`);
+        if (!res.ok) throw new Error('加载失败');
+        const blob = await res.blob();
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          setMediaCache(prev => ({ ...prev, [mediaId]: url }));
+          urls.push(url);
+        }
+      } catch (e) { console.error('加载媒体失败', mediaId, e); }
+    }
+    return urls;
+  }, [mediaCache]);
+
+  // 下载单张媒体
+  const downloadMedia = useCallback(async (mediaId: string, index: number) => {
+    try {
+      const res = await fetch(`/api/media/${mediaId}`);
+      if (!res.ok) { alert('文件不存在'); return; }
+      const blob = await res.blob();
+      const ext = blob.type.includes('png') ? 'png' : blob.type.includes('jpeg') || blob.type.includes('jpg') ? 'jpg' : 'bin';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `观察照片_${index + 1}.${ext}`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e: any) { alert('下载失败: ' + e.message); }
+  }, []);
+
+  // 下载整条观察记录的所有媒体
+  const downloadObsMedia = useCallback(async (obs: any) => {
+    if (!obs?.mediaUrls?.length) return;
+    for (let i = 0; i < obs.mediaUrls.length; i++) {
+      await downloadMedia(obs.mediaUrls[i], i);
+    }
+  }, [downloadMedia]);
+
+  // 组件卸载时清理所有 object URL
+  useEffect(() => {
+    return () => { Object.values(mediaCache).forEach(url => URL.revokeObjectURL(url)); };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -191,18 +250,53 @@ export default function DataManagement() {
               <div className="divide-y divide-[var(--color-border)]">
                 {data.observations.map((o: any) => (
                   <div key={o.id} className="px-5 py-4">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className="text-xs font-medium text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded">
                         📅 {o.date}
                       </span>
                       {o.context && (
                         <span className="text-xs text-[var(--color-text-light)]">{o.context}</span>
                       )}
+                      {o.teacherName && (
+                        <span className="text-xs text-[var(--color-text-secondary)] bg-gray-100 px-2 py-0.5 rounded">
+                          👩‍🏫 {o.teacherName}
+                        </span>
+                      )}
+                      {o.mediaUrls?.length > 0 && (
+                        <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                          📷 {o.mediaUrls.length} 张
+                        </span>
+                      )}
                     </div>
                     {o.whiteDescription && (
-                      <p className="text-sm text-[var(--color-text-main)] line-clamp-3 leading-relaxed">
+                      <p className="text-sm text-[var(--color-text-main)] line-clamp-3 leading-relaxed mb-2">
                         {o.whiteDescription}
                       </p>
+                    )}
+                    {/* 媒体缩略图 */}
+                    {o.mediaUrls?.length > 0 && (
+                      <div className="flex items-center gap-2 flex-wrap mt-1">
+                        {o.mediaUrls.map((mediaId: string, i: number) => (
+                          <div key={mediaId} className="relative">
+                            {mediaCache[mediaId] ? (
+                              <img src={mediaCache[mediaId]} alt={`照片${i+1}`}
+                                className="w-14 h-14 object-cover rounded border border-[var(--color-border)] cursor-pointer hover:opacity-80"
+                                onClick={(e) => { e.stopPropagation(); window.open(mediaCache[mediaId], '_blank'); }}
+                              />
+                            ) : (
+                              <div className="w-14 h-14 bg-gray-100 rounded border border-[var(--color-border)] flex items-center justify-center text-xs text-gray-400">
+                                加载中
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); downloadObsMedia(o); }}
+                          className="ml-1 text-xs text-[var(--color-primary)] hover:underline flex items-center gap-0.5 self-end pb-1"
+                        >
+                          ⬇ 下载全部
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}
