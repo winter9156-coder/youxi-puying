@@ -203,7 +203,8 @@ http.createServer((q,r)=>{
   // Static files
   let f=u==='/'?'/index.html':u,fp=path.join(__dirname,'dist',f),ext=path.extname(f).slice(1);
   if(!fs.existsSync(fp))fp=path.join(__dirname,'dist','index.html'),ext='html';
-  r.writeHead(200,{'Content-Type':{'html':'text/html','js':'text/javascript','css':'text/css'}[ext]||'application/octet-stream','Content-Disposition':'inline'});
+  let cacheCtrl=ext==='html'?'no-cache, no-store, must-revalidate':'no-cache';
+  r.writeHead(200,{'Content-Type':{'html':'text/html','js':'text/javascript','css':'text/css'}[ext]||'application/octet-stream','Content-Disposition':'inline','Cache-Control':cacheCtrl});
   r.end(fs.readFileSync(fp));
 }).listen(5173,'0.0.0.0');
 
