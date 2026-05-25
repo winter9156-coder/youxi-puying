@@ -114,25 +114,35 @@ export default function ChildDetail() {
       const c = await getChild(id);
       setChild(c || null);
       const allObs = await getObservationsByChild(id);
-      // 教师只看同班教师写的观察记录，管理员看全部
-      let filtered = allObs;
-      let allReports = await getReportsByChild(id);
-      let filteredReports = allReports;
+      const allReports = await getReportsByChild(id);
+
+      // 获取该幼儿所在班级的所有教师姓名
+      let classTeacherNames = new Set<string>();
       try {
-        const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
-        const isAdmin = u.data?.role === 'admin' || u.name === '王洋洋';
-        if (!isAdmin && c && c.class) {
-          // 获取该幼儿所在班级的所有教师姓名
+        if (c && c.class) {
           const res = await fetch(`/api/class-teachers?class=${encodeURIComponent(c.class)}`);
           const data = await res.json();
-          const classTeacherNames = new Set(data.teachers || []);
-          filtered = allObs.filter(o => classTeacherNames.has(o.teacherName));
-          // 只保留同班教师写的观察记录对应的分析报告
-          const filteredObsIds = new Set(filtered.map(o => o.id));
-          filteredReports = allReports.filter(r => filteredObsIds.has(r.observationId));
+          classTeacherNames = new Set(data.teachers || []);
         }
       } catch {}
-      setObservations(filtered);
+
+      const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
+      const isAdmin = u.data?.role === 'admin' || u.name === '王洋洋';
+
+      // 时间线：教师只看同班教师写的观察记录，管理员看全部
+      let filteredObs = allObs;
+      if (!isAdmin && classTeacherNames.size > 0) {
+        filteredObs = allObs.filter(o => classTeacherNames.has(o.teacherName));
+      }
+
+      // 雷达图和学期小结：始终只使用同班教师观察记录对应的分析报告
+      let filteredReports = allReports;
+      if (classTeacherNames.size > 0) {
+        const filteredObsIds = new Set(filteredObs.map(o => o.id));
+        filteredReports = allReports.filter(r => filteredObsIds.has(r.observationId));
+      }
+
+      setObservations(filteredObs);
       setReports(filteredReports);
       // 加载上次保存的小结
       if (c?.notes?.includes('【学期发展小结】')) {

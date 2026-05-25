@@ -98,7 +98,7 @@ async function query(sql, params) {
   if (!tableMatch) return [];
   const table = tableMatch[1];
 
-  const whereMatch = sql.match(/WHERE\s+(.+?)(?:ORDER BY|LIMIT|\$)/i);
+  const whereMatch = sql.match(/WHERE\s+(.+?)(?:ORDER BY|LIMIT|$)/i);
   let querySQL = `SELECT id, data FROM ${table}`;
   const values = [];
 
