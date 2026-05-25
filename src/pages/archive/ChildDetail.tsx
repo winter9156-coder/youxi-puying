@@ -116,6 +116,8 @@ export default function ChildDetail() {
       const allObs = await getObservationsByChild(id);
       // 教师只看同班教师写的观察记录，管理员看全部
       let filtered = allObs;
+      let allReports = await getReportsByChild(id);
+      let filteredReports = allReports;
       try {
         const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
         const isAdmin = u.data?.role === 'admin' || u.name === '王洋洋';
@@ -125,10 +127,13 @@ export default function ChildDetail() {
           const data = await res.json();
           const classTeacherNames = new Set(data.teachers || []);
           filtered = allObs.filter(o => classTeacherNames.has(o.teacherName));
+          // 只保留同班教师写的观察记录对应的分析报告
+          const filteredObsIds = new Set(filtered.map(o => o.id));
+          filteredReports = allReports.filter(r => filteredObsIds.has(r.observationId));
         }
       } catch {}
       setObservations(filtered);
-      setReports(await getReportsByChild(id));
+      setReports(filteredReports);
       // 加载上次保存的小结
       if (c?.notes?.includes('【学期发展小结】')) {
         const idx = c.notes.indexOf('【学期发展小结】');
