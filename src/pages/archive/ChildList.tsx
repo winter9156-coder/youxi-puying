@@ -89,7 +89,7 @@ export default function ChildList() {
         <div>
           <h1 className="text-2xl font-bold text-[var(--color-text-main)]">幼儿档案</h1>
           <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-            共 {children.length} 名幼儿{teacherClass ? ` · ${teacherClass}` : ''}
+            共 {filtered.length} 名幼儿{teacherClass ? ` · ${teacherClass}` : ''}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -104,18 +104,20 @@ export default function ChildList() {
         </div>
       </div>
 
-      {/* 搜索 + 班级筛选 */}
+      {/* 搜索 + 班级筛选（教师只能看自己班，不显示筛选） */}
       <div className="flex gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-light)]" />
           <input type="text" placeholder="搜索幼儿姓名..." value={search} onChange={e => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-[var(--color-border)] rounded-xl text-sm focus:outline-none focus:border-[var(--color-primary)]" />
         </div>
-        <select value={classFilter} onChange={e => setClassFilter(e.target.value)}
-          className="px-3 py-2.5 bg-white border border-[var(--color-border)] rounded-xl text-sm focus:outline-none">
-          <option value="">{teacherClass || '全部班级'}</option>
-          {!teacherClass && classes.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+        {!teacherClass && (
+          <select value={classFilter} onChange={e => setClassFilter(e.target.value)}
+            className="px-3 py-2.5 bg-white border border-[var(--color-border)] rounded-xl text-sm focus:outline-none">
+            <option value="">全部班级</option>
+            {classes.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        )}
       </div>
 
       {/* 快速添加栏 — 输入姓名按回车即添加 */}

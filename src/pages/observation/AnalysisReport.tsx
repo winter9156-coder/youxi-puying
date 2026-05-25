@@ -53,7 +53,7 @@ export default function AnalysisReportPage() {
   const navigate = useNavigate();
   const [observation, setObservation] = useState<Observation | null>(null);
   const [report, setReport] = useState<AnalysisReport | null>(null);
-  const [child, setChild] = useState<Child | null>(null);
+  const [children, setChildren] = useState<Child[]>([]);
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [editing, setEditing] = useState(false);
   const [editContext, setEditContext] = useState('');
@@ -77,9 +77,14 @@ export default function AnalysisReportPage() {
         }
         const r = await getReportByObservation(obs.id);
         setReport(r || null);
-        if (obs.childIds[0]) {
-          const c = await getChild(obs.childIds[0]);
-          setChild(c || null);
+        // 加载所有被观察的幼儿
+        if (obs.childIds?.length) {
+          const childList: Child[] = [];
+          for (const cid of obs.childIds) {
+            const c = await getChild(cid);
+            if (c) childList.push(c);
+          }
+          setChildren(childList);
         }
       }
       setLoaded(true);
@@ -120,7 +125,9 @@ export default function AnalysisReportPage() {
   const handleDownloadWord = useCallback(async () => {
     if (!observation || !report) return;
     try {
-      const childName = child?.name || '未命名';
+      // 获取所有被观察幼儿的名字
+      const childNames = children.map(c => c.name);
+      const childNameStr = childNames.length > 0 ? childNames.join('、') : '未命名';
       const secs = parseSections(report.caseAnalysis);
       const getSec = (l: string) => secs.find(s => s.title === l)?.content || '';
       const analysisText = [getSec('发展指南对标分析'), getSec('图式行为识别'), getSec('学习品质分析'),
@@ -146,7 +153,8 @@ export default function AnalysisReportPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          childName,
+          childName: childNameStr,
+          childCount: childNames.length,
           context: observation.context || '',
           date: formatDate(observation.date),
           description: observation.whiteDescription,
@@ -168,7 +176,7 @@ export default function AnalysisReportPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `观察分析报告_${childName}_${observation.date}.docx`;
+      a.download = `观察分析报告_${childNameStr}_${observation.date}.docx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -177,7 +185,7 @@ export default function AnalysisReportPage() {
       console.error('Word生成失败:', err);
       alert('Word下载失败，请稍后重试');
     }
-  }, [observation, report, child]);
+  }, [observation, report, children]);
 
   if (!loaded) {
     return <div className="text-center py-12 text-[var(--color-text-light)]">加载中...</div>;
@@ -218,7 +226,7 @@ export default function AnalysisReportPage() {
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-[var(--color-text-main)]">观察分析报告</h1>
           <div className="flex items-center gap-4 mt-1 text-sm text-[var(--color-text-secondary)] flex-wrap">
-            <span>分析对象：<span className="bg-gray-100 text-[var(--color-text-main)] px-2 py-0.5 rounded">{child?.name || '未选择幼儿'}</span></span>
+            <span>分析对象（{children.length}人）：<span className="bg-gray-100 text-[var(--color-text-main)] px-2 py-0.5 rounded">{children.map(c => c.name).join('、') || '未选择幼儿'}</span></span>
             <span>观察时间：{formatDate(observation.date)}</span>
             {observation.teacherName && <span>👩‍🏫 观察教师：{observation.teacherName}</span>}
             {observation.context && <span>📍 {observation.context}</span>}
