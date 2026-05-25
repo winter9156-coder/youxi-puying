@@ -119,13 +119,12 @@ export default function ChildDetail() {
       try {
         const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
         const isAdmin = u.data?.role === 'admin' || u.name === '王洋洋';
-        if (!isAdmin && c) {
-          const teacherClass = u.data?.班级 || '';
-          if (teacherClass && c.class && teacherClass !== c.class) {
-            // 教师班级与幼儿班级不同，不显示（安全兜底）
-            filtered = [];
-          }
-          // 同班则显示全部观察记录（所有同班老师写的都可见）
+        if (!isAdmin && c && c.class) {
+          // 获取该幼儿所在班级的所有教师姓名
+          const res = await fetch(`/api/class-teachers?class=${encodeURIComponent(c.class)}`);
+          const data = await res.json();
+          const classTeacherNames = new Set(data.teachers || []);
+          filtered = allObs.filter(o => classTeacherNames.has(o.teacherName));
         }
       } catch {}
       setObservations(filtered);

@@ -237,8 +237,18 @@ http.createServer((q,r)=>{
     return;
   }
 
+  // 获取某班级的教师名单（用于观察时间线过滤）
+  if(u==='/api/class-teachers'&&m==='GET'){
+    const urlObj=new URL(u,'http://localhost'+q.url);
+    const cls=decodeURIComponent(urlObj.searchParams.get('class')||'');
+    if(!cls||!jsonUsers){sendJSON(r,200,{teachers:[]});return;}
+    const names=Object.values(jsonUsers).filter(u=>u.data&&u.data.班级===cls).map(u=>u.name).filter(Boolean);
+    sendJSON(r,200,{teachers:names});
+    return;
+  }
+
   // REST API
-  if(u.startsWith('/api/')&&!u.startsWith('/api/download')&&!u.startsWith('/api/login')&&!u.startsWith('/api/me')&&!u.startsWith('/api/admin')&&!u.startsWith('/api/upload')&&!u.startsWith('/api/media')){apiRouter(q,r,u,m);return;}
+  if(u.startsWith('/api/')&&!u.startsWith('/api/download')&&!u.startsWith('/api/login')&&!u.startsWith('/api/me')&&!u.startsWith('/api/admin')&&!u.startsWith('/api/upload')&&!u.startsWith('/api/media')&&!u.startsWith('/api/class-teachers')){apiRouter(q,r,u,m);return;}
   // Word: 观察记录下载
   if(u==='/api/download-docx'&&m==='POST'){let b=[];q.on('data',c=>b.push(c));q.on('end',async()=>{try{const d=JSON.parse(Buffer.concat(b));const tp=t=>t.split('\n').filter(l=>l.trim()).map(l=>new Paragraph({spacing:{after:120},children:[new TextRun(clean(l))]}));const ch=[new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:300},children:[new TextRun({text:'蒲二幼自主游戏追记（室内）',bold:true,size:36})]}),new Paragraph({spacing:{after:200},children:[new TextRun(clean('班级：'+d.context)),new TextRun('    记录人：')]}),new Paragraph({spacing:{after:60},children:[new TextRun({text:'分析对象（'+(d.childCount||1)+'人）',bold:true})]}),new Paragraph({spacing:{after:120},children:[new TextRun(clean(d.childName))]}),new Paragraph({spacing:{after:60},children:[new TextRun({text:'观察时间',bold:true})]}),new Paragraph({spacing:{after:200},children:[new TextRun(clean(d.date))]}),new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'观察实录',bold:true,size:24})]}),...tp(clean(d.description))];if(d.photos&&d.photos.length)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'现场素材',bold:true,size:24})]}),...d.photos.map(p=>new Paragraph({spacing:{before:60,after:60},alignment:AlignmentType.CENTER,children:[new ImageRun({data:Buffer.from(p.split(',')[1],'base64'),transformation:{width:480,height:360}})]})));if(d.childExpression)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'幼儿表达表征记录',bold:true,size:24})]}),...tp(clean(d.childExpression)));if(d.teacherDialogue)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'师幼共读对话',bold:true,size:24})]}),...tp(clean(d.teacherDialogue)));if(d.summary)ch.push(new Paragraph({spacing:{before:60,after:60},children:[new TextRun({text:'行为摘要',bold:true,size:22})]}),...tp(clean(d.summary)));if(d.analysis)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'观察分析',bold:true,size:24})]}),...tp(clean(d.analysis)));if(d.strategy)ch.push(new Paragraph({spacing:{before:120,after:60},children:[new TextRun({text:'教育支持策略',bold:true,size:24})]}),...tp(clean(d.strategy)));ch.push(new Paragraph({spacing:{before:300},alignment:AlignmentType.CENTER,border:{top:{style:BorderStyle.SINGLE,size:6,color:'CCCCCC',space:1}},children:[]}),new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'以上分析基于本次单一观察片段，请结合幼儿日常表现与家庭背景综合判断',italics:true,color:'888888',size:18})]}));const doc=new Document({styles:{default:{document:{run:{font:'宋体',size:22}}}},sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1440,right:1440,bottom:1440,left:1440}}},children:ch}]});const buf=await Packer.toBuffer(doc);r.writeHead(200,{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment;filename=report.docx','Content-Length':buf.length});r.end(buf);}catch(e){r.writeHead(500);r.end('err');}});return;}
   // Word: 发展档案下载
