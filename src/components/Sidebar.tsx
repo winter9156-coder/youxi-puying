@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Eye, Lightbulb, HeartHandshake,
-  BookUser, Settings, BarChart3, LogOut, Database
+  BookUser, Settings, BarChart3, LogOut, Database, MessageSquare
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -26,13 +26,27 @@ export default function Sidebar() {
     { to: '/班级统计', icon: BarChart3, label: '班级统计' },
   ];
 
-  // 仅管理员（王洋洋）可见
+  // 仅管理员可见（非王洋洋）
   const adminItems = [
+    { to: '/观师荐策', icon: MessageSquare, label: '观师荐策' },
+  ];
+
+  // 仅王洋洋可见
+  const superAdminItems = [
+    { to: '/观师荐策', icon: MessageSquare, label: '观师荐策' },
     { to: '/数据管理', icon: Database, label: '数据管理' },
     { to: '/设置', icon: Settings, label: '设置' },
   ];
 
-  const navItems = userRole === 'admin' ? [...commonItems, ...adminItems] : commonItems;
+  const isSuperAdmin = currentUser === '王洋洋';
+  let navItems;
+  if (isSuperAdmin) {
+    navItems = [...commonItems, ...superAdminItems];
+  } else if (userRole === 'admin') {
+    navItems = [...commonItems, ...adminItems];
+  } else {
+    navItems = commonItems;
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('edu_token');

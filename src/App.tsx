@@ -23,6 +23,8 @@ import ChildList from './pages/archive/ChildList';
 import ChildDetail from './pages/archive/ChildDetail';
 // 数据管理
 import DataManagement from './pages/DataManagement';
+// 观师荐策
+import TeacherRecommend from './pages/TeacherRecommend';
 
 function App() {
   return (
@@ -51,8 +53,10 @@ function App() {
           <Route path="/幼儿档案/:id" element={<ChildDetail />} />
           {/* 设置 */}
           <Route path="/设置" element={<Settings />} />
-          {/* 数据管理（仅管理员可见） */}
+          {/* 数据管理（仅王洋洋可见） */}
           <Route path="/数据管理" element={<DataManagement />} />
+          {/* 观师荐策（所有管理员可见） */}
+          <Route path="/观师荐策" element={<TeacherRecommend />} />
           {/* 班级统计 */}
           <Route path="/班级统计" element={<ClassStats />} />
         </Route>
