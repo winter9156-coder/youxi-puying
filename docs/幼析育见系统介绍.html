@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>幼析·育见 — 幼儿园教师观察记录系统介绍</title>
+<style>
+  :root {
+    --primary: #534AB7;
+    --primary-light: #EEEDFE;
+    --primary-dark: #3C3489;
+    --accent-teal: #1D9E75;
+    --accent-coral: #D85A30;
+    --accent-pink: #D4537E;
+    --accent-blue: #378ADD;
+    --accent-amber: #BA7517;
+    --text-main: #2C2C2A;
+    --text-secondary: #5F5E5A;
+    --text-light: #888780;
+    --bg-warm: #FAF9F6;
+    --bg-white: #FFFFFF;
+    --border: #E8E6DF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg-warm);
+    color: var(--text-main);
+    line-height: 1.8;
+    font-size: 15px;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 80px 24px 72px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.06) 0%, transparent 50%);
+  }
+  .hero h1 {
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    position: relative;
+    letter-spacing: 2px;
+  }
+  .hero .subtitle {
+    font-size: 18px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .hero .desc {
+    font-size: 14px;
+    opacity: 0.7;
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Section */
+  .section {
+    padding: 64px 0;
+  }
+  .section-divider {
+    border: none;
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title .icon-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .section-desc {
+    color: var(--text-secondary);
+    font-size: 15px;
+    margin-bottom: 32px;
+  }
+
+  /* Cards */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .module-card {
+    background: var(--bg-white);
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .module-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+  .module-card.full-width {
+    grid-column: 1 / -1;
+  }
+  .module-card .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+  .module-card h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .module-card p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* Highlight box */
+  .highlight-box {
+    background: var(--primary-light);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 24px 0;
+    border-left: 4px solid var(--primary);
+  }
+  .highlight-box h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 8px;
+  }
+  .highlight-box p, .highlight-box ul {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .highlight-box ul {
+    padding-left: 20px;
+  }
+  .highlight-box li {
+    margin-bottom: 4px;
+  }
+
+  /* AI capability tags */
+  .ai-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .ai-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+  }
+
+  /* Flow diagram */
+  .flow-steps {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin: 32px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .flow-step {
+    text-align: center;
+    flex: 0 0 auto;
+    min-width: 120px;
+  }
+  .flow-step .step-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 8px;
+  }
+  .flow-step .step-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+  .flow-step .step-desc {
+    font-size: 11px;
+    color: var(--text-light);
+  }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    padding-top: 18px;
+    font-size: 20px;
+    color: var(--text-light);
+    margin: 0 8px;
+  }
+
+  /* Capability table */
+  .cap-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin: 24px 0;
+    font-size: 14px;
+  }
+  .cap-table thead {
+    background: #F5F4F0;
+  }
+  .cap-table th {
+    padding: 14px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .cap-table td {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-main);
+  }
+  .cap-table tr:last-child td {
+    border-bottom: none;
+  }
+  .cap-table .cap-label {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .cap-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+
+  /* Quote */
+  .quote-block {
+    background: #FAF9F6;
+    border-left: 3px solid var(--accent-amber);
+    padding: 20px 24px;
+    margin: 24px 0;
+    border-radius: 0 12px 12px 0;
+  }
+  .quote-block p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.8;
+  }
+
+  /* Screenshot trigger */
+  .screenshot-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary);
+    background: var(--primary-light);
+    border: 1px solid var(--primary);
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.2s;
+  }
+  .screenshot-trigger:hover {
+    background: var(--primary);
+    color: white;
+  }
+
+  /* Lightbox */
+  .lightbox-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+  }
+  .lightbox-overlay.active {
+    display: flex;
+  }
+  .lightbox-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+  }
+  .lightbox-content img {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    object-fit: contain;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+    transition: background 0.2s;
+  }
+  .lightbox-close:hover {
+    background: #eee;
+  }
+  .lightbox-caption {
+    position: absolute;
+    bottom: -36px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: rgba(255,255,255,0.9);
+    font-size: 14px;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-light);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Architecture overview */
+  .arch-overview {
+    background: var(--bg-white);
+    border-radius: 16px;
+    padding: 36px;
+    border: 1px solid var(--border);
+    margin: 32px 0;
+  }
+  .arch-overview h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .arch-modules {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .arch-module {
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid;
+  }
+  .arch-module .mod-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  .arch-module .mod-name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .arch-module .mod-desc {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  .sub-features {
+    margin-top: 12px;
+  }
+  .sub-feat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin: 2px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .module-grid { grid-template-columns: 1fr; }
+    .arch-modules { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 32px; }
+    .flow-steps { flex-direction: column; align-items: center; }
+    .flow-arrow { transform: rotate(90deg); padding: 0; margin: 8px 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>幼析 · 育见</h1>
+  <div class="subtitle">幼儿园教师自主教研支持系统</div>
+  <div class="desc">以 AI 技术赋能一线教师，让每一次观察都成为专业成长的起点</div>
+</div>
+
+<div class="container">
+
+  <!-- Section 1: System Overview -->
+  <div class="section">
+    <h2 class="section-title">
+      <span class="icon-circle" style="background:#E6F1FB;">&#9733;</span>
+      系统概览
+    </h2>
+    <p class="section-desc">
+      「幼析·育见」是专为幼儿园一线教师打造的智能教研支持平台，服务于北京市蒲黄榆第二幼儿园 12 个班级、36 名教师的日常教学工作。系统以《3-6 岁儿童学习与发展指南》为理论基石，深度融合 DeepSeek AI 大模型，覆盖教师从"观察幼儿行为"到"分析发展水平"再到"设计支持策略"的完整专业工作流。
+    </p>
+
+    <div class="arch-overview">
+      <h3>系统功能架构</h3>
+      <div class="arch-modules">
+        <div class="arch-module" style="background:#E6F1FB; border-color:#85B7EB;">
+          <div class="mod-icon">&#128065;</div>
+          <div class="mod-name" style="color:#185FA5;">幼析</div>
+          <div class="mod-desc" style="color:#185FA5;">观察与分析</div>
+          <div class="sub-features">
+            <span class="sub-feat" style="background:#B5D4F4; color:#042C53;">观察记录</span>
+            <span class="sub-feat" style="background:#B5D4F4; color:#042C53;">AI 分析报告</span>
+            <span class="sub-feat" style="background:#B5D4F4; color:#042C53;">表征解读</span>
+          </div>
+        </div>
+        <div class="arch-module" style="background:#EEEDFE; border-color:#AFA9EC;">
+          <div class="mod-icon">&#128161;</div>
+          <div class="mod-name" style="color:#534AB7;">育见</div>
+          <div class="mod-desc" style="color:#534AB7;">策略与课程设计</div>
+          <div class="sub-features">
+            <span class="sub-feat" style="background:#CECBF6; color:#26215C;">思维共享</span>
+            <span class="sub-feat" style="background:#CECBF6; color:#26215C;">PBL 设计</span>
+            <span class="sub-feat" style="background:#CECBF6; color:#26215C;">主题课程</span>
+          </div>
+        </div>
+        <div class="arch-module" style="background:#FBEAF0; border-color:#ED93B1;">
+          <div class="mod-icon">&#129309;</div>
+          <div class="mod-name" style="color:#D4537E;">协同共育</div>
+          <div class="mod-desc" style="color:#D4537E;">家园沟通支持</div>
+          <div class="sub-features">
+            <span class="sub-feat" style="background:#F4C0D1; color:#4B1528;">沟通助手</span>
+            <span class="sub-feat" style="background:#F4C0D1; color:#4B1528;">模拟演练</span>
+          </div>
+        </div>
+        <div class="arch-module" style="background:#FAECE7; border-color:#F0997B;">
+          <div class="mod-icon">&#128214;</div>
+          <div class="mod-name" style="color:#D85A30;">幼儿档案</div>
+          <div class="mod-desc" style="color:#D85A30;">成长轨迹追踪</div>
+          <div class="sub-features">
+            <span class="sub-feat" style="background:#F5C4B3; color:#4A1B0C;">发展雷达图</span>
+            <span class="sub-feat" style="background:#F5C4B3; color:#4A1B0C;">学期小结</span>
+          </div>
+        </div>
+        <div class="arch-module" style="background:#EAF3DE; border-color:#97C459;">
+          <div class="mod-icon">&#128202;</div>
+          <div class="mod-name" style="color:#639922;">班级统计</div>
+          <div class="mod-desc" style="color:#639922;">教学数据看板</div>
+          <div class="sub-features">
+            <span class="sub-feat" style="background:#C0DD97; color:#173404;">领域覆盖</span>
+            <span class="sub-feat" style="background:#C0DD97; color:#173404;">人均分析</span>
+          </div>
+        </div>
+        <div class="arch-module" style="background:#E1F5EE; border-color:#5DCAA5;">
+          <div class="mod-icon">&#127891;</div>
+          <div class="mod-name" style="color:#0F6E56;">观师荐策</div>
+          <div class="mod-desc" style="color:#0F6E56;">教师能力发展</div>
+          <div class="sub-features">
+            <span class="sub-feat" style="background:#9FE1CB; color:#04342C;">教学观察</span>
+            <span class="sub-feat" style="background:#9FE1CB; color:#04342C;">策略推荐</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h4>设计理念</h4>
+      <p>系统遵循"观察—分析—策略—共育"的教育循环，帮助教师将日常观察记录转化为有理论支撑的专业判断，再通过结构化的策略设计工具将判断转化为行动方案，最终实现家园教育合力。AI 不是替代教师思考，而是为教师的专业判断提供即时的理论支撑和方法参考。</p>
+    </div>
+
+    <div class="module-card" style="margin-top: 24px; cursor: pointer;" onclick="openLightbox('images/screenshot-login.jpg', '系统登录界面')">
+      <div class="card-icon" style="background:#F1EFE8;">&#128248;</div>
+      <h3>点击查看系统界面截图</h3>
+      <p>系统登录页，展示「幼析·育见」的品牌视觉和整体界面风格，温暖柔和的配色设计为教师营造舒适的使用体验。</p>
+      <span class="screenshot-trigger">&#128269; 查看大图</span>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Section 2: 幼析 -->
+  <div class="section">
+    <h2 class="section-title">
+      <span class="icon-circle" style="background:#E6F1FB; color:#185FA5;">&#128065;</span>
+      幼析 — 专业观察与智能分析
+    </h2>
+    <p class="section-desc">
+      观察是幼儿教育的起点。然而一线教师日常面临"观察多、分析少、记录散"的现实困境——大量的行为白描堆砌在笔记本中，缺乏系统的专业解读。「幼析」模块正是为解决这一核心痛点而生。
+    </p>
+
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="card-icon" style="background:#E6F1FB;">&#9997;</div>
+        <h3>观察记录</h3>
+        <p>教师选择观察对象、记录观察场景和幼儿行为白描，可上传现场照片和视频作为辅助素材，支持语音输入。表单设计贴合一线教师的记录习惯——哪里看到的、孩子在做什么、说了什么——让记录回归行为本身。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#EEEDFE;">&#129504;</div>
+        <h3>AI 智能分析</h3>
+        <p>提交后，AI 以"15 年学前教育专家"的角色，从五大领域对标、图式行为识别、学习品质分析、社会性与情绪发展、最近发展区等 8 个维度，生成结构化的专业分析报告，每条策略均可追溯至具体观察行为。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#FBEAF0;">&#128247;</div>
+        <h3>表达表征解读</h3>
+        <p>幼儿的绘画、搭建、泥塑等作品是思维的"外显语言"。教师上传表征作品照片，AI 从发展水平和图式行为角度进行专业解读，帮助教师"读懂"幼儿作品中隐藏的认知图式和学习意图。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#FAECE7;">&#128196;</div>
+        <h3>结构化报告</h3>
+        <p>分析报告按 8 大模块结构化呈现，配有对应图标，支持一键导出 Word 文档。教师可确认报告状态（草稿→已确认），可回溯编辑观察实录，形成可存档的专业文本。</p>
+      </div>
+    </div>
+
+    <div class="module-card" style="cursor: pointer;" onclick="openLightbox('images/screenshot-dashboard.jpg', '工作台首页')">
+      <div class="card-icon" style="background:#E6F1FB;">&#128248;</div>
+      <h3>工作台首页截图</h3>
+      <p>系统工作台首页展示统计卡片（观察记录数、已生成方案数、幼儿总数）和六大快捷入口，教师一目了然掌握班级教学动态。</p>
+      <span class="screenshot-trigger">&#128269; 查看大图</span>
+    </div>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-circle" style="background:#E6F1FB;">&#128100;</div>
+        <div class="step-label">选择观察对象</div>
+        <div class="step-desc">从本班幼儿中选择</div>
+      </div>
+      <div class="flow-arrow">&#10140;</div>
+      <div class="flow-step">
+        <div class="step-circle" style="background:#E1F5EE;">&#128221;</div>
+        <div class="step-label">记录行为白描</div>
+        <div class="step-desc">客观描述所看所听</div>
+      </div>
+      <div class="flow-arrow">&#10140;</div>
+      <div class="flow-step">
+        <div class="step-circle" style="background:#FAECE7;">&#128248;</div>
+        <div class="step-label">上传现场素材</div>
+        <div class="step-desc">照片、视频、表征作品</div>
+      </div>
+      <div class="flow-arrow">&#10140;</div>
+      <div class="flow-step">
+        <div class="step-circle" style="background:#EEEDFE;">&#129504;</div>
+        <div class="step-label">AI 结构化分析</div>
+        <div class="step-desc">8 大维度专业解读</div>
+      </div>
+      <div class="flow-arrow">&#10140;</div>
+      <div class="flow-step">
+        <div class="step-circle" style="background:#FBEAF0;">&#128196;</div>
+        <div class="step-label">确认并导出</div>
+        <div class="step-desc">Word 文档可存档</div>
+      </div>
+    </div>
+
+    <div class="quote-block">
+      <p>"观察记录不仅是教学的痕迹，更是教师专业判断的依据。当 AI 帮教师从白描中提炼出图式行为、对标发展指南、识别最近发展区时，教师的每一次记录都在积累专业资本。"</p>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Section 3: 育见 -->
+  <div class="section">
+    <h2 class="section-title">
+      <span class="icon-circle" style="background:#EEEDFE; color:#534AB7;">&#128161;</span>
+      育见 — 从分析到策略的跨越
+    </h2>
+    <p class="section-desc">
+      教师在「幼析」中获得了对幼儿行为的深度理解，但"看得懂"和"能支持"之间还有一段距离。「育见」模块正是搭建这座桥梁——将专业判断转化为可执行的教学策略和课程方案，真正实现"以观察驱动教学"的教研闭环。
+    </p>
+
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="card-icon" style="background:#EEEDFE;">&#128172;</div>
+        <h3>思维共享方案设计</h3>
+        <p>自主游戏结束后的回顾讨论是教师最常面临的教研场景之一。系统通过"教练式对话"引导教师逐步明确游戏情境、讨论目标和引导方式，最终生成包含具体提问策略的完整回顾引导方案。AI 遵循"每次只提一个问题"的原则，通过多轮对话协助教师理清思路。</p>
+        <div class="ai-tags">
+          <span class="ai-tag" style="background:#534AB7;">教练式对话</span>
+          <span class="ai-tag" style="background:#7F77DD;">三阶段引导</span>
+        </div>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#E1F5EE;">&#128218;</div>
+        <h3>PBL 项目式学习设计</h3>
+        <p>AI 扮演"20 年一线经验的资深课程设计师"，通过五步深度设计流程，引导教师完成从项目发掘、目标锚定、内容建构、活动设计到评估反思的完整 PBL 方案。每个环节都有结构化的提问，帮助教师建立项目式学习的系统思维。</p>
+        <div class="ai-tags">
+          <span class="ai-tag" style="background:#0F6E56;">五步设计流程</span>
+          <span class="ai-tag" style="background:#1D9E75;">深度课程建构</span>
+        </div>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#FAECE7;">&#127912;</div>
+        <h3>主题课程设计</h3>
+        <p>提供"传统主题课程"和"PBL 项目式学习"双路径选择。教师根据实际教学需求选择方向后，AI 自动调整后续引导重点——传统路径侧重内容覆盖和知识传递，PBL 路径侧重开放式探究和问题解决，让课程设计既灵活又有深度。</p>
+        <div class="ai-tags">
+          <span class="ai-tag" style="background:#D85A30;">双路径设计</span>
+          <span class="ai-tag" style="background:#BA7517;">灵活切换</span>
+        </div>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#FBEAF0;">&#128161;</div>
+        <h3>通用策略生成器</h3>
+        <p>教师粘贴「幼析」模块的分析报告，AI 从材料调整、教师介入、活动方案和家园协同四个维度生成针对性的支持策略。作为连接"观察分析"与"教学实践"的快速通道，帮助教师将观察发现迅速转化为行动方案。</p>
+        <div class="ai-tags">
+          <span class="ai-tag" style="background:#D4537E;">四维策略</span>
+          <span class="ai-tag" style="background:#993556;">即时报表</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module-card" style="cursor: pointer;" onclick="openLightbox('images/screenshot-yujian.jpg', '育见模块界面')">
+      <div class="card-icon" style="background:#EEEDFE;">&#128248;</div>
+      <h3>育见模块界面截图</h3>
+      <p>育见首页展示四大功能入口：思维共享活动、PBL 项目式学习、主题课程设计、通用策略生成。界面清晰直观，教师可快速定位所需工具。</p>
+      <span class="screenshot-trigger">&#128269; 查看大图</span>
+    </div>
+
+    <div class="highlight-box">
+      <h4>为什么需要「育见」？</h4>
+      <p>传统教研中，教师在教研活动后往往"想法很多、落地很少"。一份观察分析报告完成后，从"知道孩子需要什么"到"设计出有效的支持活动"之间存在显著的能力鸿沟。「育见」通过结构化的对话引导和 AI 辅助，降低了从分析到策略的认知负荷，让教师的专业思考有方法可循、有工具可依。</p>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Section 4: 协同共育 -->
+  <div class="section">
+    <h2 class="section-title">
+      <span class="icon-circle" style="background:#FBEAF0; color:#D4537E;">&#129309;</span>
+      协同共育 — 让家园沟通不再困难
+    </h2>
+    <p class="section-desc">
+      家园沟通是幼儿园教师最具挑战性的工作之一。教师既要传达专业的教育观察，又要顾及家长的情绪和接受度，稍有不慎就可能引发误解或矛盾。「协同共育」模块为教师提供了从"话术生成"到"实战演练"的完整沟通支持链。
+    </p>
+
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="card-icon" style="background:#FBEAF0;">&#128172;</div>
+        <h3>家长沟通助手</h3>
+        <p>教师输入沟通场景描述和可选的专业分析，AI 采用"三明治沟通法"（正面反馈→发展需求→具体建议）生成专业而温和的沟通话术。AI 会特别注意避免专业术语堆砌，确保家长能够理解，并给出"回家后可以做什么"的具体可操作建议。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#FAECE7;">&#127917;</div>
+        <h3>沟通模拟器</h3>
+        <p>这是系统中最具创新性的功能之一。AI 通过五阶段沉浸式演练，引导教师完成从情景分析、目标设定、事实梳理到模拟对话的全过程。演练中，AI 会切换为"家长"角色与教师实时对话，如果教师回应失当（如激化矛盾、被带偏），AI 会立即暂停模拟、切换回"教练"身份进行纠偏指导。最终通过复盘总结提炼出可带走的沟通心法。</p>
+        <div class="ai-tags">
+          <span class="ai-tag" style="background:#D85A30;">即时纠偏</span>
+          <span class="ai-tag" style="background:#BA7517;">五阶段演练</span>
+          <span class="ai-tag" style="background:#993C1D;">角色扮演</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quote-block">
+      <p>"沟通不是教师单向传递信息，而是在理解与共情中建立教育共识。模拟器让教师在一个安全的环境中反复练习、试错、反思，这正是传统教研中难以实现的。"</p>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Section 5: 幼儿档案 -->
+  <div class="section">
+    <h2 class="section-title">
+      <span class="icon-circle" style="background:#FAECE7; color:#D85A30;">&#128214;</span>
+      幼儿档案 — 看得见的成长轨迹
+    </h2>
+    <p class="section-desc">
+      每个孩子的成长都值得被记录和看见。「幼儿档案」模块将分散的观察记录汇聚为每个孩子独特的成长档案，让教师和家长能够直观地看到幼儿在五大领域的发展全貌。
+    </p>
+
+    <div class="module-card" style="cursor: pointer; margin-bottom: 24px;" onclick="openLightbox('images/screenshot-archive.jpg', '幼儿档案详情页')">
+      <div class="card-icon" style="background:#FAECE7;">&#128248;</div>
+      <h3>幼儿档案详情页截图</h3>
+      <p>幼儿档案详情页包含五维发展雷达图、AI 生成的学期发展小结、以及完整的观察时间线。雷达图直观展示幼儿在语言、社会、科学、艺术、学习品质五大领域的发展轮廓。</p>
+      <span class="screenshot-trigger">&#128269; 查看大图</span>
+    </div>
+
+    <div class="module-grid">
+      <div class="module-card full-width">
+        <div class="card-icon" style="background:#FAECE7;">&#128202;</div>
+        <h3>五维发展雷达图</h3>
+        <p>系统自动从该幼儿所有的分析报告中提取五大领域（语言、社会、科学、艺术、学习品质）的发展关键词频率，经归一化处理后生成雷达图。每个维度的分数客观反映了教师观察记录中对该领域的关注程度和分析深度。更重要的是，雷达图的数据仅来源于该幼儿所在班级三位教师书写的观察记录，确保数据的代表性和准确性。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#EEEDFE;">&#128221;</div>
+        <h3>学期发展小结</h3>
+        <p>AI 基于该幼儿所有分析报告的汇总内容，自动生成约 200 字的学期发展小结。语言风格亲切积极、具体有据，适合直接用于家长沟通和学期报告，减轻教师期末撰写负担的同时保证了内容的专业性。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#E6F1FB;">&#128197;</div>
+        <h3>观察时间线</h3>
+        <p>按时间倒序展示该幼儿的所有观察记录，形成完整的行为发展时间线。教师可以追踪幼儿的发展变化轨迹，发现成长规律，也可以快速定位到某次观察的详细分析报告。</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Section 6: 班级统计 -->
+  <div class="section">
+    <h2 class="section-title">
+      <span class="icon-circle" style="background:#EAF3DE; color:#639922;">&#128202;</span>
+      班级统计 — 以数据看见教学全貌
+    </h2>
+    <p class="section-desc">
+      班级统计模块为教师和管理者提供了教学观察的"全景视图"。通过量化指标，帮助教师发现教学中的盲点和改进方向。
+    </p>
+
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="card-icon" style="background:#EAF3DE;">&#128200;</div>
+        <h3>概览指标</h3>
+        <p>一键查看班级的观察记录总数、在册幼儿数和人均观察次数。人均观察次数让教师直观了解每位幼儿被关注的频率，及时发现可能被"忽略"的孩子。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#FAECE7;">&#128269;</div>
+        <h3>领域覆盖分析</h3>
+        <p>统计五大领域（语言、社会、科学、艺术、学习品质）分别有多少幼儿被关注到，以进度条可视化展示覆盖率。系统会自动提示教师关注覆盖率较低的领域，引导教学观察更加均衡。</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Section 7: Teacher capability improvement -->
+  <div class="section">
+    <h2 class="section-title">
+      <span class="icon-circle" style="background:#E1F5EE; color:#0F6E56;">&#127891;</span>
+      教师能力提升
+    </h2>
+    <p class="section-desc">
+      「幼析·育见」不仅是一套工具系统，更是一个隐性的教师专业发展平台。每个模块的设计都指向一项或多项教师核心能力的提升。
+    </p>
+
+    <table class="cap-table">
+      <thead>
+        <tr>
+          <th>教师能力</th>
+          <th>对应的系统模块</th>
+          <th>提升方式</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="cap-dot" style="background:#378ADD;"></span><strong>观察力</strong></td>
+          <td>幼析 — 观察记录</td>
+          <td>结构化的记录表单引导教师关注场景、行为、对话等关键要素，养成系统观察的习惯</td>
+        </tr>
+        <tr>
+          <td><span class="cap-dot" style="background:#7F77DD;"></span><strong>分析判断力</strong></td>
+          <td>幼析 — AI 分析报告</td>
+          <td>AI 的专业分析为教师提供理论对标范例，教师在反复使用中逐渐内化分析框架</td>
+        </tr>
+        <tr>
+          <td><span class="cap-dot" style="background:#D4537E;"></span><strong>策略设计力</strong></td>
+          <td>育见 — 全部子模块</td>
+          <td>教练式对话引导教师经历完整的策略思考过程，从"依赖 AI"逐步走向"自主设计"</td>
+        </tr>
+        <tr>
+          <td><span class="cap-dot" style="background:#D85A30;"></span><strong>课程设计力</strong></td>
+          <td>育见 — PBL / 主题课程</td>
+          <td>五步设计流程培养教师的项目化思维和课程建构能力</td>
+        </tr>
+        <tr>
+          <td><span class="cap-dot" style="background:#1D9E75;"></span><strong>沟通协作力</strong></td>
+          <td>协同共育 — 沟通助手/模拟器</td>
+          <td>三明治沟通法和模拟演练帮助教师建立有效的家园沟通模式</td>
+        </tr>
+        <tr>
+          <td><span class="cap-dot" style="background:#BA7517;"></span><strong>数据素养</strong></td>
+          <td>班级统计 / 幼儿档案</td>
+          <td>雷达图和覆盖率分析培养教师用数据驱动教学改进的意识</td>
+        </tr>
+        <tr>
+          <td><span class="cap-dot" style="background:#639922;"></span><strong>反思能力</strong></td>
+          <td>观师荐策 / 全系统</td>
+          <td>从观察记录到策略落地的完整闭环促使教师持续反思教学实践</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="highlight-box">
+      <h4>从"被动接受"到"主动建构"</h4>
+      <p>系统的核心设计哲学不是让 AI 代替教师思考，而是通过"示范—引导—内化"三层机制，帮助教师在日常使用中逐步提升专业能力。初期，教师依赖 AI 的分析报告获取专业解读；中期，教师在 AI 的教练式引导下学习分析方法和策略框架；后期，教师将内化的专业素养运用于独立的教学决策。这是一个从"用工具"到"长能力"的渐进过程。</p>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Section 8: Technical highlights -->
+  <div class="section">
+    <h2 class="section-title">
+      <span class="icon-circle" style="background:#F1EFE8; color:#5F5E5A;">&#9881;</span>
+      技术特色
+    </h2>
+    <p class="section-desc">
+      系统在技术实现上兼顾了专业性和易用性，确保一线教师零门槛使用。
+    </p>
+
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="card-icon" style="background:#EEEDFE;">&#129504;</div>
+        <h3>DeepSeek AI 深度集成</h3>
+        <p>系统在 9 个功能点集成了 AI 能力，每个场景都精心设计了专业的角色提示词（系统提示词），确保 AI 输出的内容符合学前教育领域的话语体系。支持流式输出，教师可以实时看到 AI 的"思考过程"，增强理解和信任感。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#E6F1FB;">&#128274;</div>
+        <h3>数据安全与权限隔离</h3>
+        <p>系统采用按班级的数据隔离机制——每位教师只能查看和管理本班数据，确保教学隐私。管理员密码保护 API Key 配置，防止未经修改的系统设置。数据支持 JSON 导出和腾讯云 COS 云备份，确保数据安全。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#E1F5EE;">&#128196;</div>
+        <h3>一键文档导出</h3>
+        <p>观察分析报告、课程设计方案、幼儿档案均可一键导出为 Word 文档，包含完整的文字内容和嵌入的图片素材。教师无需手动排版，生成的文档可直接用于教研存档和家长沟通。</p>
+      </div>
+      <div class="module-card">
+        <div class="card-icon" style="background:#FAECE7;">&#127909;</div>
+        <h3>语音输入支持</h3>
+        <p>观察记录支持 Web Speech API 中文语音输入，教师在户外观察时无需打字，语音即可快速记录幼儿行为，再由 AI 进行专业分析，真正实现"边看边说边记"。</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Summary -->
+  <div class="section" style="text-align: center; padding-bottom: 80px;">
+    <h2 class="section-title" style="justify-content: center;">
+      <span class="icon-circle" style="background:#EEEDFE;">&#10024;</span>
+      让每一位教师都成为研究者
+    </h2>
+    <p style="color: var(--text-secondary); font-size: 15px; max-width: 640px; margin: 16px auto 32px; line-height: 2;">
+      「幼析·育见」的核心使命，是通过技术手段降低教师进行专业教研的门槛，让每一位一线教师——无论经验深浅——都能在日常教学中自然地完成"观察、分析、策略、共育"的完整教研循环。当专业不再是教研活动中的"表演"，而是嵌入每一次记录、每一次分析、每一次沟通的日常实践，教师的专业成长便真正发生了。
+    </p>
+
+    <div class="flow-steps" style="justify-content: center;">
+      <div class="flow-step">
+        <div class="step-circle" style="background:#E6F1FB;">&#128065;</div>
+        <div class="step-label">看见儿童</div>
+      </div>
+      <div class="flow-arrow">&#10140;</div>
+      <div class="flow-step">
+        <div class="step-circle" style="background:#EEEDFE;">&#128161;</div>
+        <div class="step-label">理解发展</div>
+      </div>
+      <div class="flow-arrow">&#10140;</div>
+      <div class="flow-step">
+        <div class="step-circle" style="background:#E1F5EE;">&#128640;</div>
+        <div class="step-label">设计支持</div>
+      </div>
+      <div class="flow-arrow">&#10140;</div>
+      <div class="flow-step">
+        <div class="step-circle" style="background:#FBEAF0;">&#129309;</div>
+        <div class="step-label">家园共育</div>
+      </div>
+      <div class="flow-arrow">&#10140;</div>
+      <div class="flow-step">
+        <div class="step-circle" style="background:#FAECE7;">&#127891;</div>
+        <div class="step-label">共同成长</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>幼析·育见 — 幼儿园教师自主教研支持系统</p>
+  <p style="margin-top: 4px;">蒲黄榆第二幼儿园</p>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lightbox-content">
+    <button class="lightbox-close" onclick="closeLightbox(event)">&times;</button>
+    <img src="" alt="" id="lightbox-img">
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+  </div>
+</div>
+
+<script>
+  function openLightbox(src, caption) {
+    const lb = document.getElementById('lightbox');
+    const img = document.getElementById('lightbox-img');
+    const cap = document.getElementById('lightbox-caption');
+    img.src = src;
+    img.alt = caption;
+    cap.textContent = caption;
+    lb.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(e) {
+    if (e.target === document.getElementById('lightbox') || e.target.tagName === 'BUTTON') {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+</script>
+
+</body>
+</html>

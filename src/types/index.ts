@@ -63,6 +63,8 @@ export interface EducationPlan {
   content: string;  // Markdown
   tags: string[];
   status: 'draft' | 'completed';
+  teacherName?: string;    // 创建教师姓名
+  teacherClass?: string;   // 创建教师班级
   createdAt: string;
 }
 
