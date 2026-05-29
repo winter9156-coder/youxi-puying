@@ -137,11 +137,15 @@ export default function Simulator() {
               <button onClick={async () => {
                 const aiMsgs = messages.filter((m: any) => m.role === 'ai');
                 if (!aiMsgs.length) return;
+                const u = JSON.parse(localStorage.getItem('edu_user') || '{}');
                 await (await import('../../db')).savePlan({
-                  id: crypto.randomUUID(), type: 'strategy',
+                  id: crypto.randomUUID(), type: 'communication',
                   title: '家园沟通策略', childIds: [],
                   content: aiMsgs.map((m: any) => m.content).join('\n\n'),
-                  tags: [], status: 'draft', createdAt: new Date().toISOString(),
+                  tags: [], status: 'draft',
+                  teacherName: u.name || '',
+                  teacherClass: u.data?.班级 || '',
+                  createdAt: new Date().toISOString(),
                 });
                 alert('方案已保存！');
               }}

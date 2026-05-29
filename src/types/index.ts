@@ -52,7 +52,7 @@ export interface AnalysisReport {
 }
 
 // === 教学方案 ===
-export type PlanType = 'shared-thinking' | 'pbl' | 'theme-course' | 'strategy';
+export type PlanType = 'shared-thinking' | 'pbl' | 'theme-course' | 'strategy' | 'communication';
 
 export interface EducationPlan {
   id: string;

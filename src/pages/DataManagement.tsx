@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Download, RefreshCw, Cloud, Users, FileText, Eye, Lightbulb, ChevronDown, ChevronRight, GraduationCap, Baby, Camera, X, ZoomIn } from 'lucide-react';
+import { Download, RefreshCw, Cloud, Users, FileText, Eye, Lightbulb, ChevronDown, ChevronRight, GraduationCap, Baby, Camera, X, ZoomIn, ImagePlus } from 'lucide-react';
 
 const API = '';
 
@@ -21,6 +21,7 @@ export default function DataManagement() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [mediaMap, setMediaMap] = useState<Record<string, MediaItem>>({});
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [loadedObsIds, setLoadedObsIds] = useState<Set<string>>(new Set());
 
   const token = localStorage.getItem('edu_token');
   const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
@@ -71,6 +72,11 @@ export default function DataManagement() {
       }
     }
   }, [mediaMap]);
+
+  const handleLoadMedia = (obs: any) => {
+    setLoadedObsIds(prev => new Set(prev).add(obs.id));
+    loadMediaForObs(obs);
+  };
 
   const downloadSingleMedia = useCallback(async (mediaId: string, filename: string) => {
     try {
@@ -143,13 +149,13 @@ export default function DataManagement() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // 数据加载后自动加载所有观察记录的媒体
-  useEffect(() => {
-    if (!data?.observations?.length) return;
-    data.observations.forEach((o: any) => {
-      if (o.mediaUrls?.length) loadMediaForObs(o);
-    });
-  }, [data, loadMediaForObs]);
+  // 数据加载后，不再自动加载所有媒体（改为按需加载）
+  // useEffect(() => {
+  //   if (!data?.observations?.length) return;
+  //   data.observations.forEach((o: any) => {
+  //     if (o.mediaUrls?.length) loadMediaForObs(o);
+  //   });
+  // }, [data, loadMediaForObs]);
 
   // 清理 media URLs
   useEffect(() => {
@@ -382,36 +388,47 @@ export default function DataManagement() {
                     {/* 媒体文件 */}
                     {o.mediaUrls?.length > 0 && (
                       <div className="flex items-start gap-2 flex-wrap mt-2">
-                        {o.mediaUrls.map((mediaId: string, i: number) => {
-                          const media = mediaMap[mediaId];
-                          return (
-                            <div key={mediaId} className="relative group">
-                              {media?.url ? (
-                                <img src={media.url} alt={`照片${i + 1}`}
-                                  className="w-20 h-20 object-cover rounded-lg border border-[var(--color-border)] cursor-pointer hover:opacity-80 transition-opacity"
-                                  onClick={() => setPreviewImage(media.url)}
-                                />
-                              ) : media?.loading ? (
-                                <div className="w-20 h-20 bg-gray-100 rounded-lg border border-[var(--color-border)] flex items-center justify-center">
-                                  <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
-                                </div>
-                              ) : (
-                                <div className="w-20 h-20 bg-gray-50 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-xs text-gray-400">
-                                  加载失败
-                                </div>
-                              )}
-                              {/* 单张下载按钮 */}
-                              <button onClick={() => downloadSingleMedia(mediaId, `照片${i + 1}`)}
-                                className="absolute bottom-1 right-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Download className="w-3 h-3" />
-                              </button>
-                            </div>
-                          );
-                        })}
-                        <button onClick={() => downloadAllMedia(o)}
-                          className="ml-1 text-xs text-[var(--color-primary)] hover:underline flex items-center gap-1 self-end pb-1">
-                          <Download className="w-3 h-3" /> 下载全部
-                        </button>
+                        {loadedObsIds.has(o.id) ? (
+                          // 已加载：显示图片
+                          o.mediaUrls.map((mediaId: string, i: number) => {
+                            const media = mediaMap[mediaId];
+                            return (
+                              <div key={mediaId} className="relative group">
+                                {media?.url ? (
+                                  <img src={media.url} alt={`照片${i + 1}`}
+                                    className="w-20 h-20 object-cover rounded-lg border border-[var(--color-border)] cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => setPreviewImage(media.url)}
+                                  />
+                                ) : media?.loading ? (
+                                  <div className="w-20 h-20 bg-gray-100 rounded-lg border border-[var(--color-border)] flex items-center justify-center">
+                                    <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
+                                  </div>
+                                ) : (
+                                  <div className="w-20 h-20 bg-gray-50 rounded-lg border border-[var(--color-border)] flex items-center justify-center text-xs text-gray-400">
+                                    加载失败
+                                  </div>
+                                )}
+                                <button onClick={() => downloadSingleMedia(mediaId, `照片${i + 1}`)}
+                                  className="absolute bottom-1 right-1 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Download className="w-3 h-3" />
+                                </button>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          // 未加载：显示按钮
+                          <button onClick={() => handleLoadMedia(o)}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-xs font-medium">
+                            <ImagePlus className="w-3.5 h-3.5" />
+                            显示 {o.mediaUrls.length} 张图片
+                          </button>
+                        )}
+                        {loadedObsIds.has(o.id) && (
+                          <button onClick={() => downloadAllMedia(o)}
+                            className="ml-1 text-xs text-[var(--color-primary)] hover:underline flex items-center gap-1 self-end pb-1">
+                            <Download className="w-3 h-3" /> 下载全部
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

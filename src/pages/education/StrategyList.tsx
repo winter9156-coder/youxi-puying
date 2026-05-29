@@ -44,6 +44,7 @@ const typeLabels: Record<string, string> = {
   'pbl': 'PBL 项目式学习',
   'theme-course': '主题课程设计',
   'strategy': '通用策略',
+  'communication': '沟通策略',
 };
 
 const typeColors: Record<string, string> = {
@@ -51,6 +52,7 @@ const typeColors: Record<string, string> = {
   'pbl': 'var(--color-secondary)',
   'theme-course': '#e8a87c',
   'strategy': 'var(--color-primary-light)',
+  'communication': 'var(--color-secondary)',
 };
 
 export default function StrategyList() {

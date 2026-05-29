@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { callAI } from '../../utils/ai';
 
