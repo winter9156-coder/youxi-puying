@@ -8,30 +8,44 @@ import type { Observation, AnalysisReport, Child } from '../../types';
 function parseSections(text: string) {
   const sections: { title: string; icon: React.ElementType; content: string }[] = [];
 
+  // 支持两种模块编号格式：有表征时（9个模块）和无表征时（8个模块）
   const patterns = [
     { key: '## 1. 行为摘要', icon: FileText, label: '行为摘要' },
     { key: '## 2. 《3-6 岁儿童发展指南》对标分析', icon: BookOpen, label: '发展指南对标分析' },
+    { key: '## 3. 图式行为识别与材料支持', icon: Sparkles, label: '图式行为识别与材料支持' },
     { key: '## 3. 图式行为识别', icon: Sparkles, label: '图式行为识别' },
     { key: '## 4. 学习品质分析', icon: Lightbulb, label: '学习品质分析' },
     { key: '## 5. 社会性与情绪发展', icon: HeartHandshake, label: '社会性与情绪发展' },
     { key: '## 6. 最近发展区与多元智能线索', icon: BookUser, label: '最近发展区与多元智能' },
     { key: '## 7. 需要关注的潜在议题', icon: FileText, label: '潜在议题' },
+    { key: '## 8. 表达表征解读', icon: FileText, label: '表达表征解读' },
     { key: '## 8. 教育支持策略', icon: Lightbulb, label: '教育支持策略' },
+    { key: '## 9. 教育支持策略', icon: Lightbulb, label: '教育支持策略' },
   ];
 
   for (const p of patterns) {
-    const regex = new RegExp(`${p.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([\\s\\S]*?)(?=${patterns.map(x => x.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|$)`);
+    const escapedKey = p.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const nextKeys = patterns.map(x => x.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const regex = new RegExp(`${escapedKey}([\\s\\S]*?)(?=${nextKeys.join('|')}|$)`);
     const match = text.match(regex);
     if (match && match[1].trim()) {
       sections.push({ title: p.label, icon: p.icon, content: match[1].trim() });
     }
   }
 
-  if (sections.length === 0) {
-    sections.push({ title: '分析报告', icon: FileText, content: text });
+  // 去重：如果同一个模块被两种编号模式都匹配到了，保留第一个
+  const seen = new Set<string>();
+  const deduped = sections.filter(s => {
+    if (seen.has(s.title)) return false;
+    seen.add(s.title);
+    return true;
+  });
+
+  if (deduped.length === 0) {
+    deduped.push({ title: '分析报告', icon: FileText, content: text });
   }
 
-  return sections;
+  return deduped;
 }
 
 function formatContent(content: string) {
@@ -319,15 +333,16 @@ export default function AnalysisReportPage() {
         </div>
       )}
 
-      {/* 表达表征分析：基于 AI 行为摘要 */}
-      {report && (() => {
-        const summary = sections.find(s => s.title === '行为摘要');
-        if (!summary) return null;
+      {/* 表达表征分析：仅在教师提供了表征内容时展示 */}
+      {report && observation && (observation.childExpression?.trim() || sections.some(s => s.title === '表达表征解读')) && (() => {
+        // 优先使用 AI 生成的"表达表征解读"段落，如果没有则不展示（不再复用行为摘要）
+        const exprSection = sections.find(s => s.title === '表达表征解读');
+        if (!exprSection) return null;
         return (
           <div className="bg-white rounded-2xl p-5 border border-[var(--color-border)] mb-5">
-            <h3 className="text-sm font-bold text-[var(--color-text-main)] mb-2">表达表征分析</h3>
+            <h3 className="text-sm font-bold text-[var(--color-text-main)] mb-2">表达表征解读</h3>
             <div className="text-sm text-[var(--color-text-secondary)] leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: formatContent(summary.content) }} />
+              dangerouslySetInnerHTML={{ __html: formatContent(exprSection.content) }} />
           </div>
         );
       })()}
@@ -335,7 +350,7 @@ export default function AnalysisReportPage() {
       {/* 观察分析（合并多个模块） */}
       {report && (() => {
         const analysisSections = sections.filter(s =>
-          ['行为摘要', '发展指南对标分析', '图式行为识别', '学习品质分析', '社会性与情绪发展', '最近发展区与多元智能', '潜在议题'].includes(s.title)
+          ['行为摘要', '发展指南对标分析', '图式行为识别', '图式行为识别与材料支持', '学习品质分析', '社会性与情绪发展', '最近发展区与多元智能', '潜在议题'].includes(s.title)
         );
         const strategySection = sections.find(s => s.title === '教育支持策略');
         return (

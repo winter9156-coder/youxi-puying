@@ -13,48 +13,68 @@ interface MediaItem {
   description: string;
 }
 
-function buildSystemPrompt() {
+function buildSystemPrompt(hasExpression: boolean) {
+  const expressionSection = hasExpression ? `
+## 8. 表达表征解读
+- 分析幼儿的作品、绘画、搭建等表征行为所反映的发展水平
+- 结合具体表征内容（幼儿说了什么、画了什么、做了什么），解读其认知发展阶段和意义
+- 识别表征中可能存在的图式行为线索
+` : '';
+
   return `# 角色
 你是一位拥有 15 年一线经验的学前教育专家，同时也是幼儿观察与评价领域的实践导师。你精通《3-6 岁儿童学习与发展指南》、图式理论、发展心理学、学习品质框架及多元智能理论。
 
 # 任务
 根据我提供的观察素材，生成一份结构化、专业化、可用来支持后续教育的分析报告。
 
+# 核心原则（必须严格遵守）
+1. **具象化绑定**：所有分析必须紧密结合本次观察中幼儿的具体行为片段，引用白描记录中的原文描述作为证据，禁止使用空洞的套话或泛泛而谈。
+2. **精准匹配游戏情境**：教育目标和支持策略必须针对本次观察的具体游戏场景、材料、同伴互动来设计，而非笼统的"鼓励探索""培养合作"等泛化建议。
+3. **可操作性**：每条建议需让教师看完后知道"明天我可以在区角做什么、投放什么材料、怎么跟孩子说话"。
+
 # 输出要求
-请严格按照以下 7 大模块输出分析报告，每个模块需结合具体行为证据。
+请严格按照以下模块输出分析报告，每个模块需结合具体行为证据，引用白描记录原文。${expressionSection}
 
 ## 1. 行为摘要
-用 2-3 句话概括幼儿在游戏中最突出的行为特征。
+用 2-3 句话概括幼儿在本次游戏中最突出的行为特征，引用具体行为细节（如"用积木搭建了一座三层高的塔，并在塔顶放了一面红旗"），不要使用空泛描述。
 
 ## 2. 《3-6 岁儿童发展指南》对标分析
-- 分别从健康、语言、社会、科学、艺术五个领域（只选取与该行为明显相关的领域）
-- 标出对应的子领域、具体目标（年龄班）以及幼儿当前表现出的水平
+- 只分析与本次游戏行为明显相关的领域（健康/语言/社会/科学/艺术），不需要每个领域都写
+- 对每个相关领域：标出子领域名称、该年龄段的具体目标、幼儿在本次观察中的具体表现证据
+- 判断幼儿当前处于该目标的什么水平（如"基本达到""超出预期""尚需支持"），结合本次游戏的具体场景说明
 
-## 3. 图式行为识别
-- 识别幼儿表现出的图式（如搬运、定位、旋转、围合、连接、轨迹、包裹、定向等）
-- 解释该图式反映了幼儿何种内在认知建构需求。
+## 3. 图式行为识别与材料支持
+- 识别幼儿在本次游戏中表现出的图式行为（如搬运、定位、旋转、围合、连接、轨迹、包裹、定向、变换等），结合白描记录中的具体动作描述
+- 解释该图式反映了幼儿何种内在认知建构需求
+- **材料支持策略（重点）**：基于识别出的图式，为教师提供具体的后续支持方向：
+  - **推荐投放材料**：列出 2-3 种适合该图式发展阶段的具体材料（如"大小不同的纸箱、纸筒、胶带"），说明每种材料如何支持该图式的深化发展
+  - **环境创设建议**：建议在哪个区角或场景中创设什么样的探索空间来延伸该图式
+  - **教师介入方向**：当幼儿再次出现该图式行为时，教师可以通过什么开放式提问或示范来引导幼儿深化探索
 
 ## 4. 学习品质分析
 - 从专注性、坚持性、灵活性、创造力、反思能力等维度分析
-- 指出优势品质以及可能处于萌芽状态的品质。
+- 每个维度的分析必须引用本次观察中的具体行为证据（如"幼儿在搭建过程中倒塌了两次，但每次都主动重新开始，尝试改变底座结构"）
+- 指出本次游戏中表现突出的优势品质，以及可能处于萌芽状态需要继续培养的品质
 
 ## 5. 社会性与情绪发展
-- 同伴互动方式（合作/平行/旁观/冲突等）
-- 情绪表达与调节能力
+- 同伴互动方式（合作/平行/旁观/冲突/领导/跟随等），引用具体互动细节
+- 情绪表达与调节能力，引用具体情境描述
 
 ## 6. 最近发展区与多元智能线索
-- 最近发展区：幼儿在无帮助下能做到什么？在成人或同伴稍许帮助下可能达成什么？
-- 多元智能：指出行为中可能凸显的优势智能（例如：身体-动觉、空间、逻辑-数学、人际等）。
+- 最近发展区：基于本次游戏表现，幼儿目前独立能做到什么？在教师适当支架下可能达到什么？（具体到本次游戏情境）
+- 多元智能：从本次游戏行为中识别凸显的优势智能线索（如身体-动觉、空间、逻辑-数学、人际、语言等），引用行为证据
 
 ## 7. 需要关注的潜在议题（如有）
+- 仅在确实观察到相关迹象时填写，如无则写"本次观察中未发现需要特别关注的潜在议题"
 - 可能会出现的发展不平衡、社交困难或安全风险等（如实描述，不夸大）
 
-## 8. 教育支持策略（重点）
-基于以上分析，为教师提供具体、可操作的后续支持建议。
+${hasExpression ? '## 8. 表达表征解读\n- 分析幼儿的作品、绘画、搭建等表征行为所反映的发展水平\n- 结合具体表征内容（幼儿说了什么、画了什么、做了什么），解读其认知发展阶段和意义\n- 识别表征中可能存在的图式行为线索\n' : ''}
+## ${hasExpression ? 9 : 8}. 教育支持策略（重点）
+基于以上分析，为教师提供具体、可操作的后续支持建议。所有策略必须针对本次观察的具体游戏情境设计。
 
-**针对幼儿个体的支持策略**（3-5条）：
-**针对教学环境的调整建议**（1-2条）：
-**家园共育建议**（1-2条）：
+**针对幼儿个体的支持策略**（3-5条，每条需具体到"在什么场景下做什么"）：
+**针对教学环境的材料投放与调整建议**（1-2条，列出具体材料名称和投放方式）：
+**家园共育建议**（1-2条，建议家长可以在家庭中做什么具体活动来延续该主题）：
 
 ---
 最后，请以一段提示结束：**"以上分析基于本次单一观察片段，请结合幼儿日常表现与家庭背景综合判断，并由教师复核后再用于支持决策。"**`;
@@ -73,6 +93,7 @@ export default function NewObservation() {
   const [step, setStep] = useState<'input' | 'analyzing' | 'result'>('input');
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [expressionPhotos, setExpressionPhotos] = useState<{id:string, preview:string, file:File}[]>([]);
+  const [expressionText, setExpressionText] = useState('');
   const [analyzingPhotoId, setAnalyzingPhotoId] = useState<string | null>(null);
   const [photoAnalyses, setPhotoAnalyses] = useState<Record<string, string>>({});
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -277,6 +298,9 @@ export default function NewObservation() {
     } catch {}
 
     try {
+      // 判断是否有表征内容（表征文字或表征照片）
+      const hasExpression = expressionText.trim().length > 0 || expressionPhotos.length > 0;
+
       // 构建用户输入
       let userInput = `幼儿化名：${children.filter(c => selectedChildIds.includes(c.id)).map(c => c.name).join('、')}\n`;
       if (context) userInput += `观察场景：${context}\n`;
@@ -289,6 +313,25 @@ export default function NewObservation() {
           userInput += `\n素材${i + 1}（${m.type === 'image' ? '照片' : '视频'}）`;
           if (m.description) userInput += `：${m.description}`;
         });
+      }
+
+      // 添加表征内容（仅在教师提供了表征文字或上传了表征照片时）
+      if (hasExpression) {
+        userInput += '\n\n幼儿表达表征：';
+        if (expressionText.trim()) {
+          userInput += `\n表征内容（教师记录/幼儿口述）：${expressionText.trim()}`;
+        }
+        if (expressionPhotos.length > 0) {
+          userInput += `\n教师上传了 ${expressionPhotos.length} 张表征照片（作品/绘画/搭建照片），请关注这些表征所反映的发展水平。`;
+          // 附加 AI 照片分析结果
+          const photoAnalysisTexts = expressionPhotos
+            .filter(p => photoAnalyses[p.id])
+            .map((p, i) => `表征照片${i + 1} AI分析：${photoAnalyses[p.id]}`)
+            .join('\n');
+          if (photoAnalysisTexts) {
+            userInput += `\n${photoAnalysisTexts}`;
+          }
+        }
       }
 
       // 先保存媒体文件到数据库
@@ -307,7 +350,7 @@ export default function NewObservation() {
         date: date || new Date().toISOString().split('T')[0],
         context,
         whiteDescription: description,
-        childExpression: '',
+        childExpression: expressionText.trim(),
         teacherDialogue: '',
         mediaUrls: mediaIds,
         teacherName,
@@ -317,7 +360,7 @@ export default function NewObservation() {
 
       // 调用 AI 分析
       let fullResponse = '';
-      await callAI(buildSystemPrompt(), userInput, (chunk) => {
+      await callAI(buildSystemPrompt(hasExpression), userInput, (chunk) => {
         fullResponse += chunk;
         setStreamContent(fullResponse);
       });
@@ -490,7 +533,14 @@ export default function NewObservation() {
       {/* 表达表征记录 — 拍照上传 */}
       <div className="mb-6">
         <label className="block text-sm font-semibold text-[var(--color-text-main)] mb-2">表达表征记录</label>
-        <p className="text-xs text-[var(--color-text-light)] mb-2">拍摄幼儿的作品、绘画或关键表征画面（仅照片，可多张）</p>
+        <p className="text-xs text-[var(--color-text-light)] mb-2">记录幼儿的作品说明、绘画描述或口述表达；也可上传表征照片。两者至少填一项才会生成表征分析。</p>
+        <textarea
+          value={expressionText}
+          onChange={e => setExpressionText(e.target.value)}
+          placeholder={'记录幼儿对自己作品/行为的口头表达、绘画/搭建时的自述等（如：幼儿说"我搭的是一个城堡，这里是门，这里是花园"）'}
+          rows={3}
+          className="w-full px-4 py-2.5 bg-[var(--color-warm-bg)] border border-[var(--color-border)] rounded-xl text-sm focus:outline-none focus:border-[var(--color-primary)] resize-none"
+        />
         <input ref={expressionPhotoRef} type="file" accept="image/*" multiple className="hidden" onChange={handleAddExpressionPhoto} />
         <button onClick={() => expressionPhotoRef.current?.click()}
           className="flex items-center gap-2 px-4 py-2 bg-[var(--color-warm-bg)] border border-[var(--color-border)] rounded-xl text-sm hover:bg-gray-100 transition-colors">
